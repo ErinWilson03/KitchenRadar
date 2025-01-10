@@ -17,7 +17,7 @@ module.exports = {
       primary: {
         100: "#0061FF0A",
         200: "#0061FF1A", // 10% opacity added by the 1A
-        300: "#0061FF",
+        300: "#1E3F20",
       },
       accent: {
         100: "#FBFBFD",
