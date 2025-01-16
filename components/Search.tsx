@@ -8,7 +8,7 @@ import { useDebouncedCallback } from "use-debounce";
 const Search = () => {
   const path = usePathname();
   const params = useLocalSearchParams<{ query?: string }>(); // we get an object containing query of type string from this method
-  const { search, setSearch } = useState(params.query);
+  const [ search, setSearch ] = useState(params.query);
 
   const debouncedSearch = useDebouncedCallback((text: string) => 
     router.setParams({text}), 300
