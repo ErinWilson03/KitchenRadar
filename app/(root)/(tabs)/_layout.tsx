@@ -26,45 +26,33 @@ const TabIcon = ({
           : "text-black-200 font-rubik"
       } text-xs w-full text-center mt-1`}
     >
-        {title}
+      {title}
     </Text>
   </View>
 );
 
 const TabsLayout = () => {
   return (
-      <Tabs
-        screenOptions={{
-          tabBarShowLabel: false,
-          tabBarStyle: {
-            backgroundColor: "white",
-            position: "relative",
-            borderBottomColor: "#1E3F20",
-            borderBottomWidth: 1,
-            minHeight: 110,
-          },
-          tabBarPosition: 'top',
-        }}
-      >
-
+    <Tabs
+      screenOptions={{
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          backgroundColor: "white",
+          position: "relative",
+          borderBottomColor: "#1E3F20",
+          borderBottomWidth: 1,
+          minHeight: 110,
+        },
+        tabBarPosition: "top",
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
           headerShown: false,
-          tabBarIcon: ({focused}) => (
+          tabBarIcon: ({ focused }) => (
             <TabIcon icon={icons.home} focused={focused} title="Home" />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: "Explore",
-          headerShown: false,
-          tabBarIcon: ({focused}) => (
-            <TabIcon icon={icons.search} focused={focused} title="Explore" />
           ),
         }}
       />
@@ -74,12 +62,27 @@ const TabsLayout = () => {
         options={{
           title: "Profile",
           headerShown: false,
-          tabBarIcon: ({focused}) => (
+          tabBarIcon: ({ focused }) => (
             <TabIcon icon={icons.person} focused={focused} title="Profile" />
           ),
         }}
       />
-      </Tabs>
+
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: "Notifications",
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              icon={icons.bell}
+              focused={focused}
+              title="Notifications"
+            />
+          ),
+        }}
+      />
+    </Tabs>
   );
 };
 

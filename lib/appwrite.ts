@@ -18,12 +18,12 @@ client
 export const avatar = new Avatars(client);
 export const account = new Account(client);
 
-export async function login() {
+export async function login(provider: OAuthProvider) {
   try {
     const redirectUri = Linking.createURL("/");
 
     const response = await account.createOAuth2Token(
-      OAuthProvider.Google,
+      provider,
       redirectUri
     );
 
