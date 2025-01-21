@@ -15,7 +15,7 @@ import images from "@/constants/images";
 import icons from "@/constants/icons";
 import { login } from "@/lib/appwrite";
 import { useGlobalContext } from "@/lib/global-provider";
-import { Redirect } from "expo-router";
+import { Redirect, router } from "expo-router";
 
 const SignIn = () => {
   const { refetch, loading, isLoggedIn } = useGlobalContext();
@@ -29,7 +29,8 @@ const SignIn = () => {
     const isSuccess = await login(provider);
     if (isSuccess) {
       console.log("Login successful");
-      return <Redirect href="/" />;
+      // return <Redirect href="/(root)/(tabs)/profile" />;
+      router.push('/');
     } else {
       console.error("Login failed");
     }

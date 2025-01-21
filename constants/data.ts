@@ -55,16 +55,13 @@ export const featuredCards = [
   },
 ];
 
+// TODO: change this const name to expiries or something and change its references
 export const categories = [
   { title: "All", category: "All" },
-  { title: "Houses", category: "House" },
-  { title: "Condos", category: "Condos" },
-  { title: "Duplexes", category: "Duplexes" },
-  { title: "Studios", category: "Studios" },
-  { title: "Villas", category: "Villa" },
-  { title: "Apartments", category: "Apartments" },
-  { title: "Townhomes", category: "Townhomes" },
-  { title: "Others", category: "Others" },
+  { title: "Near Expiry", category: "Near Expiry" },
+  { title: "Expired", category: "Expired" },
+  { title: "Near Best Before", category: "Near Best Before" },
+  // { title: "Custom Filters", category: "Custom Filters" },
 ];
 
 export const settings = [
