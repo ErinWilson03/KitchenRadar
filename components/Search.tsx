@@ -8,7 +8,7 @@ import { useDebouncedCallback } from "use-debounce";
 const Search = () => {
   const path = usePathname();
   const params = useLocalSearchParams<{ query?: string }>(); // we get an object containing query of type string from this method
-  const { search, setSearch } = useState(params.query);
+  const [ search, setSearch ] = useState(params.query);
 
   const debouncedSearch = useDebouncedCallback((text: string) => 
     router.setParams({text}), 300
@@ -20,7 +20,7 @@ const Search = () => {
   };
 
   return (
-    <View className="flex flex-row items-center justify-items-between w-full px-4 rounded-lg bg-accent-100 border border-primary-100 mt-5 py-2">
+    <View className="flex flex-row items-center justify-items-between w-full px-4 rounded-lg bg-accent-100 border border-primary-100 mt-1 py-2">
       <View className="flex-1 flex flex-row items-center justify-start z-50">
         <Image source={icons.search} className="size-5" />
         <TextInput
