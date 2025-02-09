@@ -5,7 +5,7 @@ import images from "@/constants/images";
 import { Link, router } from "expo-router";
 import { Text, View, Image, TouchableOpacity, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Inventory from "./inventory";
+import Inventory from "../inventory";
 import Filters from "@/components/Filters";
 import React from "react";
 
