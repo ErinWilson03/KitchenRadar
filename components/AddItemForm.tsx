@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Alert, TouchableOpacity } from "react-native";
 import {
+  DATABASE_ID,
   databases,
   getCurrentUserId,
   getOrCreateInventoryForCurrentUser,
+  INVENTORY_ITEM_COLLECTION_ID,
 } from "../lib/appwrite";
-import icons from "@/constants/icons"; // Make sure you have the icons in your constants
 import { useNavigation } from "@react-navigation/native";
 import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const DATABASE_ID = "YOUR_DATABASE_ID";
-const ITEM_COLLECTION_ID = "inventory_items";
 
 const AddItemForm = () => {
+  // todo: below line may not be needed 
   const [userId, setUserId] = useState<string | null>(null);
   const [inventoryId, setInventoryId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [dateType, setDateType] = useState("use_by"); // Default value
   const [quantity, setQuantity] = useState("");
+  const [frozen, setFrozen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       const userId = await getCurrentUserId();
       if (userId) {
+        setUserId(userId)
         const invId = await getOrCreateInventoryForCurrentUser();
         setInventoryId(invId);
       } else {
@@ -54,7 +56,7 @@ const AddItemForm = () => {
 
       await databases.createDocument(
         DATABASE_ID,
-        ITEM_COLLECTION_ID,
+        INVENTORY_ITEM_COLLECTION_ID,
         "unique()",
         {
           inventory_id: inventoryId,
@@ -62,6 +64,8 @@ const AddItemForm = () => {
           expiry_date: expiryDate.toISOString(),
           date_type: dateType,
           quantity: parseInt(quantity),
+          is_frozen: frozen,
+          is_removed: false,
         }
       );
 
@@ -195,6 +199,60 @@ const AddItemForm = () => {
 
       <View style={{ marginBottom: 15 }}>
         <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
+          Frozen Item?
+        </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <TouchableOpacity
+            onPress={() => setFrozen(false)}
+            style={{
+              backgroundColor: frozen === false ? "#00BFAE" : "#fff",
+              padding: 10,
+              borderRadius: 8,
+              borderColor: "#ddd",
+              borderWidth: 1,
+              flex: 1,
+              marginRight: 10,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                color: frozen === false ? "#fff" : "#00BFAE",
+              }}
+            >
+              No
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setFrozen(true)}
+            style={{
+              backgroundColor: frozen === true ? "#FF6F61" : "#fff",
+              padding: 10,
+              borderRadius: 8,
+              borderColor: "#ddd",
+              borderWidth: 1,
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                color: frozen === true ? "#fff" : "#FF6F61",
+              }}
+            >
+              Yes
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={{ marginBottom: 15 }}>
+        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
           Quantity
         </Text>
         <TextInput
@@ -241,7 +299,7 @@ const styles = StyleSheet.create({
     flex: 1, // Allow the container to fill the available space
     justifyContent: "flex-start", // Position content at the top of the screen
     backgroundColor: "#f9f9f9",
-    paddingTop: 20, // Optional padding for the top (safe area)
+    paddingTop: 20,
   },
   text: {
     fontSize: 20,
@@ -252,7 +310,7 @@ const styles = StyleSheet.create({
   formContent: {
     flex: 1, // This ensures the content can take up remaining space
     justifyContent: "flex-start", // Start positioning content from the top
-    paddingHorizontal: 20, // Optional padding for left and right
+    paddingHorizontal: 20,
   },
   button: {
     marginVertical: 20, // Ensure it stays above bottom safe area
