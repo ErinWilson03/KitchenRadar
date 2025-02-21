@@ -24,7 +24,6 @@ export default function Index() {
         columnWrapperClassName="flex gap-5 px-5"
         showsVerticalScrollIndicator={false}
         // It is more efficient to put basically the whole index page in the header
-        //
         ListHeaderComponent={
           <View className="px-5">
             <Search />

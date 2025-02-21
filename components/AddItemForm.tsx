@@ -12,7 +12,11 @@ import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 
-const AddItemForm = () => {
+interface AddItemFormProps {
+  setModalVisible: (visible: boolean) => void;
+}
+
+const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
   // todo: below line may not be needed 
   const [userId, setUserId] = useState<string | null>(null);
   const [inventoryId, setInventoryId] = useState<string | null>(null);
@@ -50,7 +54,7 @@ const AddItemForm = () => {
     try {
       const expiryDate = new Date(date);
       if (isNaN(expiryDate.getTime())) {
-        Alert.alert("Error", "Invalid date value");
+        Alert.alert("Error", "Invalid date value, ensure it is YYYY-MM-DD");
         return;
       }
 
@@ -80,12 +84,9 @@ const AddItemForm = () => {
     }
   };
 
-  const navigation = useNavigation(); // Access the navigation object
-
-  // Handle the back button press
   const handleBackPress = () => {
-    navigation.goBack(); // Navigate back to the previous screen
-  };
+    setModalVisible(false)
+  }
 
   return (
     <SafeAreaView
@@ -289,7 +290,7 @@ const AddItemForm = () => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleBackPress}>
-        <Text style={styles.buttonText}>←</Text>
+        <Text style={styles.buttonText}>Cancel</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

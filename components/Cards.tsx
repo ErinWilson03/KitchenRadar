@@ -23,6 +23,25 @@ export const ItemCard = ({ onPress }: { onPress?: () => void }) => {
   );
 };
 
+export const InventoryCard = ({ onPress }: { onPress?: () => void }) => {
+  const router = useRouter();
+
+  return (
+    <TouchableOpacity onPress={onPress} className="flex flex-col items-start w-60 h-80 relative">
+      <Image source={images.japan} className="size-full rounded-2xl" />
+      <Image source={images.cardGradient} className="size-full rounded-2xl absolute bottom-0" />
+      <View className="flex flex-row items-center bg-white/90 px-3 py-1.5 rounded-full absolute top-5 right-5">
+        <Image source={icons.star} className="size-4" />
+      </View>
+      <View className="flex flex-col items-start absolute bottom-5 inset-x-5">
+        <Text className="text-xl font-rubik-extrabold text-white">Item Name</Text>
+        <Text className="text-base font-rubik text-white">Expiry: 01/01/2025</Text>
+        <Text className="text-base font-rubik text-white">Storage: Fridge</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
 export const FeatureCard = ({
   title,
   description,

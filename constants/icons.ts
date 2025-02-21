@@ -32,6 +32,12 @@ import wifi from "@/assets/icons/wifi.png";
 import location from "@/assets/icons/location.png";
 import edit from "@/assets/icons/edit.png";
 import menu from "@/assets/icons/menu.png";
+import warning from "@/assets/icons/warning.png";
+import frozen from "@/assets/icons/frozen.png";
+import expired from "@/assets/icons/expired.png";
+import sort from "@/assets/icons/sort.png";
+import trash from "@/assets/icons/trash.png";
+import sortWhite from "@/assets/icons/sort_white.png";
 
 export default {
   google,
@@ -68,4 +74,10 @@ export default {
   location,
   edit,
   menu,
+  warning,
+  expired,
+  frozen,
+  sortWhite,
+  sort,
+  trash
 };
