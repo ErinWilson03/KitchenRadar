@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Alert, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Alert,
+  TouchableOpacity,
+  Modal,
+  StyleSheet,
+} from "react-native";
 import {
   DATABASE_ID,
   databases,
@@ -7,17 +15,14 @@ import {
   getOrCreateInventoryForCurrentUser,
   INVENTORY_ITEM_COLLECTION_ID,
 } from "../lib/appwrite";
-import { useNavigation } from "@react-navigation/native";
-import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import BarcodeScanner from "./BarcodeScanner";
 
 interface AddItemFormProps {
   setModalVisible: (visible: boolean) => void;
 }
 
 const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
-  // todo: below line may not be needed 
   const [userId, setUserId] = useState<string | null>(null);
   const [inventoryId, setInventoryId] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -25,12 +30,14 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
   const [dateType, setDateType] = useState("use_by"); // Default value
   const [quantity, setQuantity] = useState("");
   const [frozen, setFrozen] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [scannedBarcodeData, setScannedBarcodeData] = useState<string>("");
 
   useEffect(() => {
     const fetchUserData = async () => {
       const userId = await getCurrentUserId();
       if (userId) {
-        setUserId(userId)
+        setUserId(userId);
         const invId = await getOrCreateInventoryForCurrentUser();
         setInventoryId(invId);
       } else {
@@ -40,24 +47,33 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
     fetchUserData();
   }, []);
 
+  const handleBarcodeScanned = (data: string, productData: any) => {
+    setScannedBarcodeData(data);
+    console.log("Scanned barcode data:", data);
+
+    // Update the state of the fields with product data
+    if (productData) {
+      setName(productData.name || "");
+      setDateType(productData.dateType || "use_by");
+      setFrozen(productData.isFrozen || false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!inventoryId || !userId) {
       Alert.alert("Error", "Missing required data");
       return;
     }
-
     if (!name || !date || !dateType || !quantity) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
-
     try {
       const expiryDate = new Date(date);
       if (isNaN(expiryDate.getTime())) {
         Alert.alert("Error", "Invalid date value, ensure it is YYYY-MM-DD");
         return;
       }
-
       await databases.createDocument(
         DATABASE_ID,
         INVENTORY_ITEM_COLLECTION_ID,
@@ -70,14 +86,16 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
           quantity: parseInt(quantity),
           is_frozen: frozen,
           is_removed: false,
+          barcode: scannedBarcodeData || null, // Store the barcode data
         }
       );
-
       Alert.alert("Success", "Item added successfully!");
       setName("");
       setDate("");
       setDateType("use_by");
       setQuantity("");
+      setScannedBarcodeData("");
+      setModalVisible(false);
     } catch (error) {
       console.error("Error adding item:", error);
       Alert.alert("Error", "Failed to add item");
@@ -85,12 +103,17 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
   };
 
   const handleBackPress = () => {
-    setModalVisible(false)
-  }
+    setModalVisible(false);
+  };
 
   return (
     <SafeAreaView
-      style={{ padding: 20, backgroundColor: "#f9f9f9", borderRadius: 10 }}
+      style={{
+        padding: 20,
+        backgroundColor: "#f9f9f9",
+        borderRadius: 10,
+        flex: 1,
+      }}
     >
       <Text
         style={{
@@ -102,6 +125,29 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
       >
         Add Item
       </Text>
+
+      <TouchableOpacity
+        onPress={() => setIsModalVisible(true)}
+        style={{
+          padding: 15,
+          borderRadius: 8,
+          backgroundColor: "#00BFAE",
+          marginTop: 10,
+          marginBottom: 15,
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "row",
+        }}
+      >
+        <Text style={{ fontSize: 16, color: "#fff", fontWeight: "bold" }}>
+          Scan Barcode
+        </Text>
+        {scannedBarcodeData ? (
+          <Text style={{ fontSize: 14, color: "#fff", marginLeft: 8 }}>
+            • Scanned
+          </Text>
+        ) : null}
+      </TouchableOpacity>
 
       <View style={{ marginBottom: 15 }}>
         <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
@@ -172,7 +218,6 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
               Use By
             </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             onPress={() => setDateType("best_before")}
             style={{
@@ -226,7 +271,6 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
               No
             </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             onPress={() => setFrozen(true)}
             style={{
@@ -273,32 +317,39 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
         />
       </View>
 
-      <TouchableOpacity
-        onPress={handleSubmit}
-        style={{
-          padding: 15,
-          borderRadius: 8,
-          backgroundColor: "#00BFAE",
-          marginTop: 10,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ fontSize: 16, color: "#fff", fontWeight: "bold" }}>
-          Add Item
-        </Text>
-      </TouchableOpacity>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <TouchableOpacity
+          style={[styles.button, styles.cancelButton]}
+          onPress={handleBackPress}
+        >
+          <Text style={[styles.buttonText, styles.cancelButtonText]}>
+            Cancel
+          </Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={handleBackPress}>
-        <Text style={styles.buttonText}>Cancel</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleSubmit}
+          style={[styles.button, styles.submitButton]}
+        >
+          <Text style={styles.buttonText}>Add Item</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Modal visible={isModalVisible} animationType="slide" transparent={false}>
+        <BarcodeScanner
+          isModalVisible={isModalVisible}
+          setIsModalVisible={setIsModalVisible}
+          onBarcodeScanned={handleBarcodeScanned}
+        />
+      </Modal>
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Allow the container to fill the available space
-    justifyContent: "flex-start", // Position content at the top of the screen
+    flex: 1,
+    justifyContent: "flex-start",
     backgroundColor: "#f9f9f9",
     paddingTop: 20,
   },
@@ -309,21 +360,34 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   formContent: {
-    flex: 1, // This ensures the content can take up remaining space
-    justifyContent: "flex-start", // Start positioning content from the top
+    flex: 1,
+    justifyContent: "flex-start",
     paddingHorizontal: 20,
   },
   button: {
-    marginVertical: 20, // Ensure it stays above bottom safe area
+    marginVertical: 20,
     padding: 15,
-    backgroundColor: "#00BFAE",
     borderRadius: 8,
     alignItems: "center",
-    marginHorizontal: 20,
+    flex: 1,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  submitButton: {
+    backgroundColor: "#00BFAE",
+    marginLeft: 8,
+  },
+  cancelButton: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#00BFAE",
+    marginRight: 8,
+  },
+  cancelButtonText: {
+    color: "#00BFAE",
   },
 });
 

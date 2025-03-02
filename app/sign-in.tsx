@@ -29,8 +29,10 @@ const SignIn = () => {
     const isSuccess = await login(provider);
     if (isSuccess) {
       console.log("Login successful");
+      // ToDo: fix this
       // return <Redirect href="/(root)/(tabs)/profile" />;
-      router.push('/');
+      // return <Redirect href="/(root)/(tabs)" />;
+      router.push('/(root)/(tabs)/profile');
     } else {
       console.error("Login failed");
     }

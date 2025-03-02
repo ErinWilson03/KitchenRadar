@@ -16,8 +16,8 @@ export default function Index() {
   return (
     <SafeAreaView className="bg-white h-full">
       <FlatList
-        data={[1, 2, 3]}
-        renderItem={({ item }) => <ItemCard />}
+        data={null}
+        renderItem={null}
         keyExtractor={(item) => item.toString()}
         numColumns={2}
         contentContainerClassName="pb-32"
@@ -66,14 +66,14 @@ export default function Index() {
               <FeatureCard
                 title="Inventory"
                 description="View your full inventory"
-                imageSource={images.newYork} // Use appropriate image
+                imageSource={images.inventory} // Use appropriate image
                 onPress={() => router.push('/inventory')}
               />
 
               <FeatureCard
                 title="Shopping List"
                 description="Manage your shopping list"
-                imageSource={images.newYork} // Use appropriate image
+                imageSource={images.list} // Use appropriate image
                 onPress={() => router.push('/shopping-list')}
               />
             </View>
@@ -82,7 +82,7 @@ export default function Index() {
               <FeatureCard
                 title="Kitchen Insights"
                 description="View your use and wasteage analytics"
-                imageSource={images.newYork} // Use appropriate image
+                imageSource={images.insights} // Use appropriate image
                 onPress={() => router.push('/kitchen-insights')}
               />
             </View>
