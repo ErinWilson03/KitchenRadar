@@ -47,6 +47,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
     fetchUserData();
   }, []);
 
+  // maybe add in a delay?
   const handleBarcodeScanned = (data: string, productData: any) => {
     setScannedBarcodeData(data);
     console.log("Scanned barcode data:", data);
@@ -109,6 +110,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
   return (
     <SafeAreaView
       style={{
+        margin: 1,
         padding: 20,
         backgroundColor: "#f9f9f9",
         borderRadius: 10,

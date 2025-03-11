@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   CameraView,
   useCameraPermissions,
@@ -21,74 +21,76 @@ interface BarcodeScannerProps {
   onBarcodeScanned: (data: string, productData: any) => void;
 }
 
-const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ 
-  isModalVisible, 
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
+  isModalVisible,
   setIsModalVisible,
-  onBarcodeScanned
+  onBarcodeScanned,
 }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
-  const [scannedBarcodeData, setScannedBarcodeData] = useState<string>("");
-  
-  // Using a custom hook
-  const { isLoading, error, productData, fetchProductData } = useBarcodeScanner();
+  const scanLockRef = useRef(false); // UseRef will prevent multiple scans
+
+  const { isLoading, error, fetchProductData } = useBarcodeScanner();
 
   useEffect(() => {
     (async () => {
       if (!permission?.granted) {
         await requestPermission();
       }
-      console.log('Camera permission status:', permission?.status);
+      console.log("Camera permission status:", permission?.status);
     })();
   }, [permission]);
 
-  if (!permission) return <View />;
-
   const handleClose = () => {
-    setIsModalVisible(false); // Close the modal itself
-    setScanned(false); // Reset scan state when closing
+    setIsModalVisible(false);
+    setScanned(false);
+    scanLockRef.current = false; // ✅ Reset scan lock on close
   };
 
   const handleBarCodeScanned = async ({ data }: BarcodeScanningResult) => {
+    if (scanLockRef.current) return; // ✅ Prevent multiple rapid scans
+    scanLockRef.current = true;
+
     setScanned(true);
-    setScannedBarcodeData(data);
-    
-    // Fetch product data using our custom hook
-    const result = await fetchProductData(data);
-    
-    if (error) {
-      Alert.alert("Error", `Failed to fetch product data: ${error}`, [
-        {
-          text: "Try Again",
-          onPress: () => setScanned(false)
-        }
-      ]);
-      return;
-    }
-    
-    if (result) {
-      // Show product info in alert
+
+    try {
+      const result = await fetchProductData(data);
+
+      if (!result) {
+        Alert.alert("Error", "No product data found. Try again.");
+        scanLockRef.current = false;
+        setScanned(false);
+        return;
+      }
+
       Alert.alert(
-        "Product Found", 
-        `Name: ${result.name}\nStorage: ${result.storageCategory}\nDate Type: ${result.dateType}\nFrozen: ${result.isFrozen ? 'Yes' : 'No'}`,
+        "Product Found",
+        `Name: ${result.name}\nStorage: ${result.storageCategory}\nDate Type: ${result.dateType}\nFrozen: ${result.isFrozen ? "Yes" : "No"}`,
         [
           {
             text: "Use This Product",
             onPress: () => {
-              onBarcodeScanned(data, result);  // Pass the barcode & product data
+              onBarcodeScanned(data, result);
               handleClose();
-            }
+            },
           },
           {
             text: "Scan Again",
-            onPress: () => setScanned(false)
-          }
+            onPress: () => {
+              scanLockRef.current = false; // ✅ Unlock scan on retry
+              setScanned(false);
+            },
+          },
         ]
       );
-      
+    } catch (err) {
+      Alert.alert("Error", `Failed to fetch product data: ${error}`);
+      scanLockRef.current = false; // ✅ Unlock scan after error
+      setScanned(false);
     }
   };
 
+  if (!permission) return <View />;
   if (!permission.granted) {
     return (
       <View className="flex-1 relative">
@@ -127,18 +129,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-          <Text style={styles.closeButtonText}>✕</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Scan Barcode</Text>
-        <View style={styles.placeholderView} />
-      </View>
-      
-      <CameraView 
+      <CameraView
         style={styles.cameraView}
         barcodeScannerSettings={{
-          barcodeTypes: ["ean13","ean8"],
+          barcodeTypes: ["ean13", "ean8"],
         }}
         onBarcodeScanned={!scanned ? handleBarCodeScanned : undefined}
       >
@@ -153,22 +147,23 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             <Text style={styles.scanText}>Align barcode in the frame</Text>
           </View>
         </View>
-        
+
         {isLoading && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#00BFAE" />
             <Text style={styles.loadingText}>Fetching product data...</Text>
           </View>
         )}
-        
+
         {scanned && !isLoading && (
           <TouchableOpacity
             style={styles.scanAgainButton}
-            onPress={() => setScanned(false)}
+            onPress={() => {
+              setScanned(false);
+              scanLockRef.current = false; // ✅ Unlock scan on retry
+            }}
           >
-            <Text style={styles.scanAgainText}>
-              Tap to scan again
-            </Text>
+            <Text style={styles.scanAgainText}>Tap to scan again</Text>
           </TouchableOpacity>
         )}
       </CameraView>
@@ -179,26 +174,26 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   headerTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   closeButton: {
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   closeButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 22,
   },
   placeholderView: {
@@ -209,25 +204,25 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   scanAreaContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   scanArea: {
     width: 250,
     height: 250,
     borderRadius: 8,
-    backgroundColor: 'transparent',
-    position: 'relative',
+    backgroundColor: "transparent",
+    position: "relative",
   },
   corner: {
-    position: 'absolute',
+    position: "absolute",
     width: 30,
     height: 30,
-    borderColor: '#00BFAE',
+    borderColor: "#00BFAE",
     borderWidth: 3,
   },
   cornerTL: {
@@ -259,37 +254,37 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   scanText: {
-    color: '#fff',
+    color: "#fff",
     marginTop: 16,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 14,
   },
   scanAgainButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 40,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(0, 191, 174, 0.9)',
+    alignSelf: "center",
+    backgroundColor: "rgba(0, 191, 174, 0.9)",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
   },
   scanAgainText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   loadingContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 40,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    alignSelf: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   loadingText: {
-    color: '#fff',
+    color: "#fff",
     marginTop: 8,
     fontSize: 14,
   },
