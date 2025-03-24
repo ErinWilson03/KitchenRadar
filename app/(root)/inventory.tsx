@@ -85,10 +85,7 @@ const Inventory = () => {
       <Modal visible={addModalVisible} animationType="slide" transparent={true}>
         <AddItemForm setModalVisible={setAddModalVisible} />
       </Modal>
-
-
-
-
+      
       <TouchableOpacity onPress={() => router.push("/inventory")}>
         <Text className="text-base font-bold text-gray-600 text-center mt-4">
           Refresh Inventory

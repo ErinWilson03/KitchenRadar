@@ -108,7 +108,6 @@ export async function getCurrentUserId() {
     console.error("Error getting UserID: ", error);
     return false;
   }
-
 }
 
 // Get or Create User's inventory
@@ -120,7 +119,7 @@ export async function getOrCreateInventoryForCurrentUser() {
     const response = await databases.listDocuments(
       DATABASE_ID,
       INVENTORY_COLLECTION_ID,
-      [Query.equal("user_id", userID)]  // Correctly use userID here
+      [Query.equal("user_id", userID)] // Correctly use userID here
     );
 
     console.log("Inventory fetch response:", response);
@@ -143,5 +142,46 @@ export async function getOrCreateInventoryForCurrentUser() {
   } catch (error) {
     console.error("Error getting/creating inventory:", error);
     return null;
+  }
+}
+
+export async function getOrCreateShoppingListForCurrentUser(): Promise<string> {
+  const userID = await getCurrentUserId();
+
+  if (!userID) {
+    throw new Error("User ID is not available"); // Ensure that user ID is valid
+  }
+
+  try {
+    console.log("Fetching shopping list for user:", userID);
+
+    // Fetch shopping list for the current user
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      SHOPPING_LISTS_COLLECTION_ID,
+      [Query.equal("user_id", userID)] // Use the query to match `user_id`
+    );
+
+    console.log("Shopping list fetch response:", response);
+
+    if (response.documents.length > 0) {
+      console.log("Existing shopping list found:", response.documents[0].$id);
+      return response.documents[0].$id; // Return the first found shopping list ID
+    }
+
+    // If no shopping list exists, create a new one for the user
+    console.log("No shopping list found. Creating one for user:", userID);
+    const newShoppingList = await databases.createDocument(
+      DATABASE_ID,
+      SHOPPING_LISTS_COLLECTION_ID,
+      ID.unique(), // Generate a unique ID for the shopping list
+      { user_id: userID } // set user id correctly
+    );
+
+    console.log("New shopping list created:", newShoppingList.$id);
+    return newShoppingList.$id; // Return the created shopping list ID
+  } catch (error) {
+    console.error("Error getting/creating shopping list:", error);
+    throw new Error("Error getting or creating shopping list"); // Throw an error if there's an issue
   }
 }

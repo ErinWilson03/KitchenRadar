@@ -35,7 +35,7 @@ export interface ListItem {
   name: string;
   quantity: number;
   is_purchased: boolean;
-  shopping_list_id: string;
+  list_id: string;
 }
 
 // Insights Collection
