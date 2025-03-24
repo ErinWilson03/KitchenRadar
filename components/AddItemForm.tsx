@@ -47,7 +47,6 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
     fetchUserData();
   }, []);
 
-  // maybe add in a delay?
   const handleBarcodeScanned = (data: string, productData: any) => {
     setScannedBarcodeData(data);
     console.log("Scanned barcode data:", data);
@@ -62,7 +61,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
 
   const handleSubmit = async () => {
     if (!inventoryId || !userId) {
-      Alert.alert("Error", "Missing required data");
+      Alert.alert("Error", "Missing required ID data");
       return;
     }
     if (!name || !date || !dateType || !quantity) {
@@ -70,9 +69,10 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
       return;
     }
     try {
+      // todo fix tyhe logic so its a uk timezone and date format
       const expiryDate = new Date(date);
       if (isNaN(expiryDate.getTime())) {
-        Alert.alert("Error", "Invalid date value, ensure it is YYYY-MM-DD");
+        Alert.alert("Error", "Invalid date value, ensure it is DD-MM-YYYY");
         return;
       }
       await databases.createDocument(
@@ -86,11 +86,13 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
           date_type: dateType,
           quantity: parseInt(quantity),
           is_frozen: frozen,
-          is_removed: false,
-          barcode: scannedBarcodeData || null, // Store the barcode data
+          is_removed: false, //todo revisit when doing analytics, this field may not actually be needed?
+          barcode: scannedBarcodeData || null, // Store the barcode data if present, but not required
         }
       );
       Alert.alert("Success", "Item added successfully!");
+
+      // reset the fields 
       setName("");
       setDate("");
       setDateType("use_by");

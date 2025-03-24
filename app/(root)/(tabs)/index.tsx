@@ -8,22 +8,25 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Inventory from "../inventory";
 import Filters from "@/components/Filters";
 import React from "react";
+import { useFlaggedItems } from "@/hooks/useFlaggedItems";
 
 // FlatList: used over scrollview components when lists of dynamic items are needed
 // More memory efficient
 
 export default function Index() {
+  const { flaggedItems} = useFlaggedItems(7);
+
   return (
-    <SafeAreaView className="bg-white h-full">
+    <SafeAreaView className="bg-white">
       <FlatList
         data={null}
         renderItem={null}
         keyExtractor={(item) => item.toString()}
         numColumns={2}
-        contentContainerClassName="pb-32"
+        contentContainerClassName="pb-20"
         columnWrapperClassName="flex gap-5 px-5"
         showsVerticalScrollIndicator={false}
-        // It is more efficient to put basically the whole index page in the header
+        // It is more memory efficient to put basically the whole index page in the header of the flatlist
         ListHeaderComponent={
           <View className="px-5">
             <Search />
@@ -42,9 +45,9 @@ export default function Index() {
 
               {/* Horizontal List of Items Expiring soon */}
               <FlatList
-                data={[1, 2, 3]}
-                renderItem={({ item }) => <ItemCard />}
-                keyExtractor={(item) => item.toString()}
+                data={flaggedItems}
+                renderItem={({ item }) => <ItemCard item={item} />}
+                keyExtractor={(item) => item.$id}
                 horizontal
                 bounces={false}
                 showsHorizontalScrollIndicator={false}
@@ -56,7 +59,7 @@ export default function Index() {
               <Text className="text-4xl font-rubik-bold text-primary-300">
                 Kitchen Hub
               </Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push("./inventory")}>
                 <Text className="text-base font-rubik-bold text-black-300">
                   See All
                 </Text>

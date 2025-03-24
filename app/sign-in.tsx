@@ -1,16 +1,14 @@
+import React, { useEffect } from "react";
 import {
   View,
   Text,
   ScrollView,
   Image,
   TouchableOpacity,
-  Alert,
   ImageBackground,
 } from "react-native";
-import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { OAuthProvider } from "react-native-appwrite";
-
 import images from "@/constants/images";
 import icons from "@/constants/icons";
 import { login } from "@/lib/appwrite";
@@ -20,19 +18,26 @@ import { Redirect, router } from "expo-router";
 const SignIn = () => {
   const { refetch, loading, isLoggedIn } = useGlobalContext();
 
-  if (!loading && isLoggedIn) {
-    console.log("User currently logged in!");
-    return <Redirect href="/" />;
-  }
+  // Ensure that once logged in, we call refetch to update the context properly
+  useEffect(() => {
+    if (!loading && isLoggedIn) {
+      console.log("User is logged in, redirecting...");
+      // router.push("/(root)/(tabs)/profile"); // Redirect to profile
+    }
+  }, [loading, isLoggedIn, refetch]);
 
+  // Function to handle login via OAuth providers
   async function handleLogin(provider: OAuthProvider) {
     const isSuccess = await login(provider);
+
     if (isSuccess) {
       console.log("Login successful");
-      // ToDo: fix this
-      // return <Redirect href="/(root)/(tabs)/profile" />;
-      // return <Redirect href="/(root)/(tabs)" />;
-      router.push('/(root)/(tabs)/profile');
+
+      // After login, explicitly call refetch to update the context and set isLoggedIn to true
+      await refetch(); // This ensures the context is updated
+
+      // After successful login, navigate to the profile page
+      router.push("/(root)/(tabs)");
     } else {
       console.error("Login failed");
     }
@@ -88,7 +93,32 @@ const SignIn = () => {
             </View>
           </TouchableOpacity>
 
-          {/*
+          {/* Facebook Login */}
+          <TouchableOpacity
+            onPress={() => handleLogin(OAuthProvider.Facebook)}
+            className="bg-white shadow-md shadow-zinc-300 rounded-full w-full py-4 mt-1"
+          >
+            <View className="flex flex-row items-center justify-center">
+              <Image
+                source={icons.facebook}
+                className="w-5 h-5"
+                resizeMode="contain"
+              />
+              <Text className="text-lg font-rubik-medium text-black-300 ml-2">
+                Continue using Facebook
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+export default SignIn;
+
+{
+  /*
           // Apple login
           <TouchableOpacity
             onPress={() => handleLogin(OAuthProvider.Apple)}
@@ -102,23 +132,6 @@ const SignIn = () => {
               />
               <Text className="text-lg font-rubik-medium text-black-300 ml-2">
                 Continue using Apple
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          // Facebook login
-          <TouchableOpacity
-            onPress={() => handleLogin(OAuthProvider.Facebook)}
-            className="bg-white shadow-md shadow-zinc-300 rounded-full w-full py-4 mt-1"
-          >
-            <View className="flex flex-row items-center justify-center">
-              <Image
-                source={icons.google}
-                className="w-5 h-5"
-                resizeMode="contain"
-              />
-              <Text className="text-lg font-rubik-medium text-black-300 ml-2">
-                Continue using Facebook
               </Text>
             </View>
           </TouchableOpacity>
@@ -139,11 +152,5 @@ const SignIn = () => {
               </Text>
             </View>
           </TouchableOpacity> 
-      */}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
-export default SignIn;
+      */
+}

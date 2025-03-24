@@ -7,7 +7,7 @@ import { useGlobalContext } from "@/lib/global-provider";
 export default function AppLayout() {
   const { loading, isLoggedIn } = useGlobalContext();
 
-  if (loading) {
+  if (isLoggedIn && loading) {    
     return (
       <SafeAreaView className="bg-white h-full flex justify-center items-center">
         <ActivityIndicator className="text-primary-300" size="large" />
@@ -15,7 +15,7 @@ export default function AppLayout() {
     );
   }
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn && !loading) {    
     return <Redirect href="/sign-in" />;
   }
 

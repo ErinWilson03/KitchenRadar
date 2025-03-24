@@ -10,6 +10,8 @@ import noResult from "@/assets/images/no-result.png";
 import inventory from "@/assets/images/inventory.png";
 import insights from "@/assets/images/insights.png";
 import list from "@/assets/images/list.png";
+import flagCard from "@/assets/images/flag-card.png";
+import cardExpiry from "@/assets/images/card-expiry.png";
 
 export default {
   onboarding,
@@ -23,5 +25,7 @@ export default {
   noResult,
   inventory,
   insights,
-  list
+  list,
+  flagCard,
+  cardExpiry
 };

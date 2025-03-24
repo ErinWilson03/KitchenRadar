@@ -38,6 +38,7 @@ import expired from "@/assets/icons/expired.png";
 import sort from "@/assets/icons/sort.png";
 import trash from "@/assets/icons/trash.png";
 import sortWhite from "@/assets/icons/sort_white.png";
+import facebook from "@/assets/icons/facebook.png";
 
 export default {
   google,
@@ -79,5 +80,6 @@ export default {
   frozen,
   sortWhite,
   sort,
-  trash
+  trash,
+  facebook,
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { format, isBefore, addDays } from "date-fns";
 import { isWithinInterval } from "date-fns/isWithinInterval";
@@ -21,6 +21,8 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
   const today = new Date();
   const expiry = new Date(expiryDate);
   
@@ -32,7 +34,8 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
       <View style={styles.info}>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.details}>Quantity: {quantity}</Text>
-        <Text style={styles.details}>Expiry: {format(expiry, "yyyy-MM-dd")}</Text>
+        {/* todo change date format */}
+        <Text style={styles.details}>Expiry: {format(expiry, "dd-MM-yyyy")}</Text>
       </View>
 
       <View style={styles.icons}>
