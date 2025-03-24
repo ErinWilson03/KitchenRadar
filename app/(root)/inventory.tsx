@@ -94,6 +94,12 @@ const Inventory = () => {
           Refresh Inventory
         </Text>
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => router.push("/(root)/(tabs)")}>
+        <Text className="text-base font-bold text-gray-600 text-center mt-4">
+          Go to Hub
+        </Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
