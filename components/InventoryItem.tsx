@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { format, isBefore, addDays } from "date-fns";
 import { isWithinInterval } from "date-fns/isWithinInterval";
 import icons from "@/constants/icons";
+import ItemDeletionModal from "./ItemDeletionModal";
 
 interface InventoryItemProps {
   name: string;
@@ -10,7 +11,7 @@ interface InventoryItemProps {
   expiryDate: string;
   isFrozen: boolean;
   onEdit: () => void;
-  onDelete: () => void;
+  onDelete: (itemName: string) => void;
 }
 
 const InventoryItem: React.FC<InventoryItemProps> = ({
@@ -25,16 +26,27 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
 
   const today = new Date();
   const expiry = new Date(expiryDate);
-  
+
   const isExpired = isBefore(expiry, today);
   const isNearExpiry = isWithinInterval(expiry, { start: today, end: addDays(today, 7) });
+
+  const handleDeletePress = () => {
+    // Show the modal when delete is clicked
+    setDeleteModalVisible(true);
+  };
+
+  const handleModalConfirm = (addToShoppingList: boolean) => {
+    setDeleteModalVisible(false); // Close the modal
+    if (addToShoppingList) {
+      onDelete(name); // Call the onDelete function passed from parent to add the item to the shopping list
+    }
+  };
 
   return (
     <View style={styles.card}>
       <View style={styles.info}>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.details}>Quantity: {quantity}</Text>
-        {/* todo change date format */}
         <Text style={styles.details}>Expiry: {format(expiry, "dd-MM-yyyy")}</Text>
       </View>
 
@@ -48,10 +60,17 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
         <TouchableOpacity onPress={onEdit}>
           <Image source={icons.edit} style={styles.actionIcon} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={onDelete}>
+        <TouchableOpacity onPress={handleDeletePress}>
           <Image source={icons.trash} style={styles.actionIcon} />
         </TouchableOpacity>
       </View>
+
+      <ItemDeletionModal
+        visible={deleteModalVisible}
+        itemName={name}
+        onConfirm={handleModalConfirm}
+        onCancel={() => setDeleteModalVisible(false)}
+      />
     </View>
   );
 };
