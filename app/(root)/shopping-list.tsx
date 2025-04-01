@@ -47,16 +47,16 @@ const ShoppingList = () => {
   useEffect(() => {
     const fetchShoppingListItems = async () => {
       if (!shoppingListId) return; // Wait until shoppingListId is set
-  
+
       try {
         const response = await databases.listDocuments(
           DATABASE_ID,
           LIST_ITEMS_COLLECTION_ID,
           [Query.equal("list_id", shoppingListId)]
         );
-        
+
         console.log("Fetched shopping list items:", response); // Log the response to debug
-  
+
         if (response.documents.length > 0) {
           setShoppingList(response.documents as unknown as ListItem[]);
         } else {
@@ -67,11 +67,9 @@ const ShoppingList = () => {
         console.error("Error fetching shopping list items:", error);
       }
     };
-  
+
     fetchShoppingListItems();
   }, [shoppingListId]); // Runs when shoppingListId changes
-  
-
 
   // Add new item to the shopping list
   const addItem = async () => {
@@ -91,7 +89,6 @@ const ShoppingList = () => {
         "unique()",
         newItemObject
       );
-
       // Explicitly cast as ListItem before adding to the state
       setShoppingList((prevList) => [
         ...prevList,
