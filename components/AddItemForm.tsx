@@ -17,6 +17,7 @@ import {
 } from "../lib/appwrite";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BarcodeScanner from "./BarcodeScanner";
+import DatePicker from "./DatePicker"; // Import DatePicker Component
 
 interface AddItemFormProps {
   setModalVisible: (visible: boolean) => void;
@@ -32,6 +33,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
   const [frozen, setFrozen] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [scannedBarcodeData, setScannedBarcodeData] = useState<string>("");
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false); // Manage date picker visibility
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -51,12 +53,26 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
     setScannedBarcodeData(data);
     console.log("Scanned barcode data:", data);
 
-    // Update the state of the fields with product data
     if (productData) {
       setName(productData.name || "");
       setDateType(productData.dateType || "use_by");
       setFrozen(productData.isFrozen || false);
     }
+  };
+
+  // Format date for UI display in DD-MM-YYYY format
+  const formatDateForDisplay = (date: string) => {
+    const [year, month, day] = date.split("-");
+    return `${day}-${month}-${year}`;
+  };
+
+  // Handle date change, format to YYYY-MM-DD for backend
+  const handleDateChange = (formattedDate: string) => {
+    const [day, month, year] = formattedDate.split("-");
+
+    const backendDate = `${year}-${month}-${day}`; // YYYY-MM-DD format
+    setDate(backendDate); // Store the date in the correct format
+    setIsDatePickerVisible(false);
   };
 
   const handleSubmit = async () => {
@@ -69,12 +85,19 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
       return;
     }
     try {
-      // todo fix tyhe logic so its a uk timezone and date format
-      const expiryDate = new Date(date);
-      if (isNaN(expiryDate.getTime())) {
-        Alert.alert("Error", "Invalid date value, ensure it is DD-MM-YYYY");
-        return;
-      }
+      // Convert the date to an ISO format if needed
+    const [day, month, year] = date.split("-");
+    const expiryDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
+
+    // Check if the date is valid
+    if (isNaN(expiryDate.getTime())) {
+      Alert.alert("Error", "Invalid date value, ensure it is DD-MM-YYYY");
+      return;
+    }
+
+    // Send the correctly formatted date to Appwrite (it expects YYYY-MM-DD format)
+    const expiryDateIsoString = expiryDate.toISOString(); // This adds time and UTC info
+
       await databases.createDocument(
         DATABASE_ID,
         INVENTORY_ITEM_COLLECTION_ID,
@@ -82,17 +105,17 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
         {
           inventory_id: inventoryId,
           name,
-          expiry_date: expiryDate.toISOString(),
+          expiry_date: expiryDateIsoString,
           date_type: dateType,
           quantity: parseInt(quantity),
           is_frozen: frozen,
-          is_removed: false, //todo revisit when doing analytics, this field may not actually be needed?
-          barcode: scannedBarcodeData || null, // Store the barcode data if present, but not required
+          is_removed: false,
+          barcode: scannedBarcodeData || null,
         }
       );
       Alert.alert("Success", "Item added successfully!");
 
-      // reset the fields 
+      // Reset the fields
       setName("");
       setDate("");
       setDateType("use_by");
@@ -130,6 +153,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
         Add Item
       </Text>
 
+      {/* Barcode Scanner */}
       <TouchableOpacity
         onPress={() => setIsModalVisible(true)}
         style={{
@@ -153,6 +177,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
         ) : null}
       </TouchableOpacity>
 
+      {/* Item Name */}
       <View style={{ marginBottom: 15 }}>
         <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
           Item Name
@@ -174,26 +199,37 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
         />
       </View>
 
+      {/* Expiry Date Picker */}
       <View style={{ marginBottom: 15 }}>
         <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
           Expiry Date
         </Text>
-        <TextInput
-          value={date}
-          onChangeText={setDate}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor={"#666"}
+        <TouchableOpacity
+          onPress={() => setIsDatePickerVisible(true)}
           style={{
             borderWidth: 1,
             borderColor: "#ddd",
             borderRadius: 8,
             padding: 10,
-            fontSize: 16,
             backgroundColor: "#fff",
+            justifyContent: "center",
           }}
-        />
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>
+            {date ? formatDateForDisplay(date) : "DD-MM-YYYY"}
+          </Text>
+        </TouchableOpacity>
       </View>
 
+      {/* Date Picker Modal */}
+      <DatePicker
+        date={date}
+        onDateChange={handleDateChange}
+        isVisible={isDatePickerVisible}
+        onClose={() => setIsDatePickerVisible(false)}
+      />
+
+      {/* Other Fields */}
       <View style={{ marginBottom: 15 }}>
         <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
           Date Type
@@ -225,7 +261,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
           <TouchableOpacity
             onPress={() => setDateType("best_before")}
             style={{
-              backgroundColor: dateType === "best_before" ? "#FF6F61" : "#fff",
+              backgroundColor: dateType === "best_before" ? "#00BFAE" : "#fff",
               padding: 10,
               borderRadius: 8,
               borderColor: "#ddd",
@@ -238,7 +274,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
             <Text
               style={{
                 fontSize: 16,
-                color: dateType === "best_before" ? "#fff" : "#FF6F61",
+                color: dateType === "best_before" ? "#fff" : "#00BFAE",
               }}
             >
               Best Before
@@ -247,6 +283,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
         </View>
       </View>
 
+      {/* Frozen Item? */}
       <View style={{ marginBottom: 15 }}>
         <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
           Frozen Item?
@@ -278,7 +315,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
           <TouchableOpacity
             onPress={() => setFrozen(true)}
             style={{
-              backgroundColor: frozen === true ? "#FF6F61" : "#fff",
+              backgroundColor: frozen === true ? "#00BFAE" : "#fff",
               padding: 10,
               borderRadius: 8,
               borderColor: "#ddd",
@@ -291,7 +328,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
             <Text
               style={{
                 fontSize: 16,
-                color: frozen === true ? "#fff" : "#FF6F61",
+                color: frozen === true ? "#fff" : "#00BFAE",
               }}
             >
               Yes
@@ -300,6 +337,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
         </View>
       </View>
 
+      {/* Quantity */}
       <View style={{ marginBottom: 15 }}>
         <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
           Quantity
@@ -321,6 +359,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
         />
       </View>
 
+      {/* Submit and Cancel Buttons */}
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <TouchableOpacity
           style={[styles.button, styles.cancelButton]}
@@ -339,6 +378,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
         </TouchableOpacity>
       </View>
 
+      {/* Barcode Modal */}
       <Modal visible={isModalVisible} animationType="slide" transparent={false}>
         <BarcodeScanner
           isModalVisible={isModalVisible}
@@ -351,23 +391,6 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "flex-start",
-    backgroundColor: "#f9f9f9",
-    paddingTop: 20,
-  },
-  text: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 20,
-  },
-  formContent: {
-    flex: 1,
-    justifyContent: "flex-start",
-    paddingHorizontal: 20,
-  },
   button: {
     marginVertical: 20,
     padding: 15,
