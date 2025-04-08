@@ -9,6 +9,7 @@ import InventoryItem from "../../components/InventoryItem";
 import AddItemForm from "../../components/AddItemForm";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import EditItemForm from "../../components/EditItemForm"; // Import EditItemForm
 
 interface InventoryItemType {
   $id: string;
@@ -25,6 +26,8 @@ interface InventoryItemType {
 const Inventory = () => {
   const [inventory, setInventory] = useState<InventoryItemType[]>([]);
   const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [currentItemId, setCurrentItemId] = useState<string>("");
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -55,6 +58,11 @@ const Inventory = () => {
     }
   };
 
+  const handleEdit = (itemId: string) => {
+    setCurrentItemId(itemId);
+    setEditModalVisible(true); // Show the edit modal
+  };
+
   return (
     <SafeAreaView className="bg-white h-full p-4">
       <Text className="text-2xl font-bold text-gray-800 text-center mb-4">
@@ -72,20 +80,35 @@ const Inventory = () => {
         keyExtractor={(item) => item.$id}
         renderItem={({ item }) => (
           <InventoryItem
+            $id={item.$id}
             name={item.name}
             quantity={item.quantity}
             expiryDate={item.expiry_date}
             isFrozen={item.is_frozen}
-            onEdit={() => console.log("Edit", item.$id)}
+            onEdit={() => handleEdit(item.$id)} // Pass itemId to edit handler
             onDelete={() => handleDelete(item.$id)}
           />
         )}
       />
 
+      {/* Modal for Adding New Item */}
       <Modal visible={addModalVisible} animationType="slide" transparent={true}>
         <AddItemForm setModalVisible={setAddModalVisible} />
       </Modal>
-      
+
+      {/* Modal for Editing Item */}
+      <Modal
+        visible={editModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <EditItemForm
+          setModalVisible={setEditModalVisible}
+          itemId={currentItemId} // Pass the itemId to the EditForm
+        />
+      </Modal>
+
       <TouchableOpacity onPress={() => router.push("/inventory")}>
         <Text className="text-base font-bold text-gray-600 text-center mt-4">
           Refresh Inventory

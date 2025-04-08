@@ -1,20 +1,31 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Modal,
+  SafeAreaView,
+} from "react-native";
 import { format, isBefore, addDays } from "date-fns";
 import { isWithinInterval } from "date-fns/isWithinInterval";
 import icons from "@/constants/icons";
 import ItemDeletionModal from "./ItemDeletionModal";
+import EditItemForm from "./EditItemForm"; // Import the EditItemForm component
 
 interface InventoryItemProps {
+  $id: string,
   name: string;
   quantity: number;
   expiryDate: string;
   isFrozen: boolean;
-  onEdit: () => void;
+  onEdit: (itemId: string) => void;
   onDelete: (itemName: string) => void;
 }
 
 const InventoryItem: React.FC<InventoryItemProps> = ({
+  $id,
   name,
   quantity,
   expiryDate,
@@ -23,23 +34,34 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
   onDelete,
 }) => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false); // Manage Edit Modal visibility
 
   const today = new Date();
   const expiry = new Date(expiryDate);
 
   const isExpired = isBefore(expiry, today);
-  const isNearExpiry = isWithinInterval(expiry, { start: today, end: addDays(today, 7) });
+  const isNearExpiry = isWithinInterval(expiry, {
+    start: today,
+    end: addDays(today, 7),
+  });
 
   const handleDeletePress = () => {
-    // Show the modal when delete is clicked
     setDeleteModalVisible(true);
   };
 
   const handleModalConfirm = (addToShoppingList: boolean) => {
-    setDeleteModalVisible(false); // Close the modal
+    setDeleteModalVisible(false);
     if (addToShoppingList) {
       onDelete(name); // Call the onDelete function passed from parent to add the item to the shopping list
     }
+  };
+
+  const handleEditPress = () => {
+    setEditModalVisible(true);
+  };
+
+  const handleEditModalClose = () => {
+    setEditModalVisible(false);
   };
 
   return (
@@ -47,17 +69,21 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
       <View style={styles.info}>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.details}>Quantity: {quantity}</Text>
-        <Text style={styles.details}>Expiry: {format(expiry, "dd-MM-yyyy")}</Text>
+        <Text style={styles.details}>
+          Expiry: {format(expiry, "dd-MM-yyyy")}
+        </Text>
       </View>
 
       <View style={styles.icons}>
         {isFrozen && <Image source={icons.frozen} style={styles.icon} />}
         {isExpired && <Image source={icons.expired} style={styles.icon} />}
-        {!isExpired && isNearExpiry && <Image source={icons.warning} style={styles.icon} />}
+        {!isExpired && isNearExpiry && (
+          <Image source={icons.warning} style={styles.icon} />
+        )}
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity onPress={onEdit}>
+        <TouchableOpacity onPress={handleEditPress}>
           <Image source={icons.edit} style={styles.actionIcon} />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleDeletePress}>
@@ -71,7 +97,22 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
         onConfirm={handleModalConfirm}
         onCancel={() => setDeleteModalVisible(false)}
       />
-    </View>
+
+      {/* Edit Item Modal */}
+      <SafeAreaView>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={editModalVisible}
+          onRequestClose={handleEditModalClose}
+        >
+            <EditItemForm
+              itemId={$id} // Assuming 'name' is a unique identifier for the item, you might need to adjust this to the actual item ID
+              setModalVisible={setEditModalVisible} // Pass function to close modal
+            />
+        </Modal>
+      </SafeAreaView>
+      </View>
   );
 };
 
@@ -119,6 +160,7 @@ const styles = StyleSheet.create({
     height: 20,
     marginLeft: 10,
   },
+
 });
 
 export default InventoryItem;
