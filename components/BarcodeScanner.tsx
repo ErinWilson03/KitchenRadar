@@ -44,11 +44,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   const handleClose = () => {
     setIsModalVisible(false);
     setScanned(false);
-    scanLockRef.current = false; // ✅ Reset scan lock on close
+    scanLockRef.current = false; // Reset scan lock on close
   };
 
   const handleBarCodeScanned = async ({ data }: BarcodeScanningResult) => {
-    if (scanLockRef.current) return; // ✅ Prevent multiple rapid scans
+    if (scanLockRef.current) return; // Prevent multiple rapid scans
     scanLockRef.current = true;
 
     setScanned(true);
@@ -77,7 +77,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
           {
             text: "Scan Again",
             onPress: () => {
-              scanLockRef.current = false; // ✅ Unlock scan on retry
+              scanLockRef.current = false; // Unlock scan on retry
               setScanned(false);
             },
           },
@@ -85,7 +85,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       );
     } catch (err) {
       Alert.alert("Error", `Failed to fetch product data: ${error}`);
-      scanLockRef.current = false; // ✅ Unlock scan after error
+      scanLockRef.current = false; // Unlock scan after error
       setScanned(false);
     }
   };
@@ -93,34 +93,26 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   if (!permission) return <View />;
   if (!permission.granted) {
     return (
-      <View className="flex-1 relative">
-        <View className="absolute inset-0 bg-black/50" />
-        <View className="absolute inset-0 justify-center items-center z-10">
-          <View className="bg-white rounded-2xl p-6 w-[85%] max-w-[400px] shadow-lg">
-            <Text className="text-xl font-semibold mb-3 text-center">
-              Camera Permission Required
-            </Text>
-            <Text className="text-base text-gray-600 mb-6 text-center leading-6">
-              We need your permission to use the camera for barcode scanning
-            </Text>
-            <View className="flex-row justify-between space-x-3">
-              <TouchableOpacity
-                className="flex-1 p-3.5 rounded-lg bg-gray-100"
-                onPress={handleClose}
-              >
-                <Text className="text-gray-600 text-center text-base font-medium">
-                  Cancel
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="flex-1 p-3.5 rounded-lg bg-primary-300"
-                onPress={requestPermission}
-              >
-                <Text className="text-white text-center text-base font-medium">
-                  Grant Permission
-                </Text>
-              </TouchableOpacity>
-            </View>
+      <View style={styles.permissionContainer}>
+        <View style={styles.permissionOverlay} />
+        <View style={styles.permissionContent}>
+          <Text style={styles.permissionText}>Camera Permission Required</Text>
+          <Text style={styles.permissionDescription}>
+            We need your permission to use the camera for barcode scanning
+          </Text>
+          <View style={styles.permissionButtons}>
+            <TouchableOpacity
+              style={styles.permissionCancelButton}
+              onPress={handleClose}
+            >
+              <Text style={styles.permissionButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.permissionGrantButton}
+              onPress={requestPermission}
+            >
+              <Text style={styles.permissionButtonText}>Grant Permission</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -136,6 +128,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         }}
         onBarcodeScanned={!scanned ? handleBarCodeScanned : undefined}
       >
+        {/* Close button (X) in the top-right corner */}
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={handleClose}
+        >
+          <Text style={styles.closeButtonText}>X</Text>
+        </TouchableOpacity>
+
         <View style={styles.overlay}>
           <View style={styles.scanAreaContainer}>
             <View style={styles.scanArea}>
@@ -160,7 +160,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             style={styles.scanAgainButton}
             onPress={() => {
               setScanned(false);
-              scanLockRef.current = false; // ✅ Unlock scan on retry
+              scanLockRef.current = false; // Unlock scan on retry
             }}
           >
             <Text style={styles.scanAgainText}>Tap to scan again</Text>
@@ -176,31 +176,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    backgroundColor: "#000",
-  },
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+  cameraView: {
+    flex: 1,
   },
   closeButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    position: "absolute",
+    top: 20,
+    right: 20,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
   },
   closeButtonText: {
     color: "#fff",
-    fontSize: 22,
-  },
-  placeholderView: {
-    width: 40,
-  },
-  cameraView: {
-    flex: 1,
+    fontSize: 24,
+    fontWeight: "bold",
   },
   overlay: {
     flex: 1,
@@ -287,6 +281,69 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginTop: 8,
     fontSize: 14,
+  },
+  permissionContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  permissionOverlay: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  permissionContent: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 20,
+    width: "80%",
+    maxWidth: 400,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  permissionText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  permissionDescription: {
+    fontSize: 16,
+    color: "gray",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  permissionButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  permissionCancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: "#f0f0f0",
+    marginRight: 10,
+  },
+  permissionGrantButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: "#00BFAE",
+  },
+  permissionButtonText: {
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

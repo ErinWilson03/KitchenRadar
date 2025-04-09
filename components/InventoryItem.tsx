@@ -15,7 +15,7 @@ import ItemDeletionModal from "./ItemDeletionModal";
 import EditItemForm from "./EditItemForm"; // Import the EditItemForm component
 
 interface InventoryItemProps {
-  $id: string,
+  $id: string;
   name: string;
   quantity: number;
   expiryDate: string;
@@ -86,7 +86,11 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
         visible={deleteModalVisible}
         itemName={name}
         itemId={$id}
+        currentQuantity={quantity}
         onCancel={() => setDeleteModalVisible(false)}
+        onDeleted={() => {
+          setDeleteModalVisible(false);
+        }}
       />
 
       {/* Edit Item Modal */}
@@ -97,13 +101,10 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
           visible={editModalVisible}
           onRequestClose={handleEditModalClose}
         >
-            <EditItemForm
-              itemId={$id}
-              setModalVisible={setEditModalVisible}
-            />
+          <EditItemForm itemId={$id} setModalVisible={setEditModalVisible} />
         </Modal>
       </SafeAreaView>
-      </View>
+    </View>
   );
 };
 
@@ -151,7 +152,6 @@ const styles = StyleSheet.create({
     height: 20,
     marginLeft: 10,
   },
-
 });
 
 export default InventoryItem;

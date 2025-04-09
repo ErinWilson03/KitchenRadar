@@ -11,12 +11,13 @@ module.exports = {
         "rubik-extrabold": ["Rubik-ExtraBold", "sans-serif"],
         "rubik-medium": ["Rubik-Medium", "sans-serif"],
         "rubik-semibold": ["Rubik-SemiBold", "sans-serif"],
-        "rubik-light": ["Rubik-Light", "sans-serif"],      }
+        "rubik-light": ["Rubik-Light", "sans-serif"],
+      },
     },
     colors: {
       primary: {
-        100: "#0061FF0A",
-        200: "#0061FF1A", // 10% opacity added by the 1A
+        100: "#889a89",
+        200: "#4e684f",
         300: "#1E3F20",
       },
       accent: {
@@ -35,4 +36,4 @@ module.exports = {
     },
   },
   plugins: [],
-}
+};

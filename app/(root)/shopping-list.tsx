@@ -5,11 +5,10 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  StyleSheet,
-  SafeAreaView,
+  Image,
   Alert,
+  SafeAreaView,
 } from "react-native";
-import { Image } from "react-native";
 import { useRouter } from "expo-router";
 import icons from "@/constants/icons";
 import {
@@ -21,11 +20,17 @@ import {
 } from "@/lib/appwrite";
 import { ListItem } from "@/lib/types";
 import { Query } from "react-native-appwrite";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs([
+  'VirtualizedLists should never be nested', // suppressing the warning about the flatlist being in a scrollview
+]);
 
 const ShoppingList = () => {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
-  const [shoppingList, setShoppingList] = useState<ListItem[]>([]); //shoppinglist is an array of lit items
+  const [shoppingList, setShoppingList] = useState<ListItem[]>([]);
   const [newItem, setNewItem] = useState<string>("");
   const [shoppingListId, setShoppingListId] = useState<string>("");
 
@@ -33,9 +38,9 @@ const ShoppingList = () => {
     const fetchUserData = async () => {
       const userId = await getCurrentUserId();
       if (userId) {
-        setUserId(userId); // Store the user ID for future use if needed
+        setUserId(userId);
         const shoppingListId = await getOrCreateShoppingListForCurrentUser();
-        setShoppingListId(shoppingListId); // Store the shopping list ID
+        setShoppingListId(shoppingListId);
       } else {
         Alert.alert("Error", "User not logged in");
       }
@@ -46,7 +51,7 @@ const ShoppingList = () => {
 
   useEffect(() => {
     const fetchShoppingListItems = async () => {
-      if (!shoppingListId) return; // Wait until shoppingListId is set
+      if (!shoppingListId) return;
 
       try {
         const response = await databases.listDocuments(
@@ -55,13 +60,10 @@ const ShoppingList = () => {
           [Query.equal("list_id", shoppingListId)]
         );
 
-        console.log("Fetched shopping list items:", response); // Log the response to debug
-
         if (response.documents.length > 0) {
           setShoppingList(response.documents as unknown as ListItem[]);
         } else {
-          console.log("No items found for the shopping list");
-          setShoppingList([]); // Ensure shoppingList is empty if no items are found
+          setShoppingList([]);
         }
       } catch (error) {
         console.error("Error fetching shopping list items:", error);
@@ -69,9 +71,8 @@ const ShoppingList = () => {
     };
 
     fetchShoppingListItems();
-  }, [shoppingListId]); // Runs when shoppingListId changes
+  }, [shoppingListId]);
 
-  // Add new item to the shopping list
   const addItem = async () => {
     if (newItem.trim() === "") return;
 
@@ -89,7 +90,6 @@ const ShoppingList = () => {
         "unique()",
         newItemObject
       );
-      // Explicitly cast as ListItem before adding to the state
       setShoppingList((prevList) => [
         ...prevList,
         response as unknown as ListItem,
@@ -100,7 +100,6 @@ const ShoppingList = () => {
     }
   };
 
-  // Delete a specific item
   const deleteItem = async (itemId: string) => {
     try {
       await databases.deleteDocument(
@@ -116,7 +115,6 @@ const ShoppingList = () => {
     }
   };
 
-  // Toggle item checked state
   const toggleChecked = async (id: string) => {
     const updatedList = shoppingList.map((item) =>
       item.$id === id ? { ...item, is_purchased: !item.is_purchased } : item
@@ -138,7 +136,6 @@ const ShoppingList = () => {
     }
   };
 
-  // Delete all items
   const deleteList = async () => {
     Alert.alert(
       "Delete All Items?",
@@ -169,7 +166,6 @@ const ShoppingList = () => {
     );
   };
 
-  // Delete only checked items
   const deleteCheckedItems = async () => {
     const checkedItems = shoppingList.filter((item) => item.is_purchased);
 
@@ -210,117 +206,91 @@ const ShoppingList = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Navigation Buttons */}
-      <View style={styles.navButtons}>
-        <TouchableOpacity
-          onPress={() => router.push("/(root)/(tabs)")}
-          style={styles.navButton}
-        >
-          <Text style={styles.navButtonText}>Back to Hub</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push("/inventory")}
-          style={styles.navButton}
-        >
-          <Text style={styles.navButtonText}>Check Inventory</Text>
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView className="flex-1 bg-white p-5">
+      <KeyboardAwareScrollView
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        enableOnAndroid={true}  // Enable keyboard handling on Android
+        keyboardShouldPersistTaps="handled"  // Close keyboard when tapping on other parts of the screen
+      >
+      <View className="mx-3">
+        <View className="flex-row justify-between items-center mb-6">
+          <Image source={icons.wallet} className="w-8 h-8" />
+          <Text className="text-2xl font-rubik-semibold text-black">
+            Shopping List
+          </Text>
+        </View>
 
-      {/* Shopping List */}
-      <FlatList
-        data={shoppingList}
-        renderItem={({ item }) => (
-          <View style={styles.listItem}>
-            <TouchableOpacity onPress={() => toggleChecked(item.$id)}>
-              <View
-                style={[styles.checkbox, item.is_purchased && styles.checked]}
+        <FlatList
+          data={shoppingList}
+          renderItem={({ item }) => (
+            <View className="flex-row items-center py-4 border-b border-primary-100">
+              <TouchableOpacity onPress={() => toggleChecked(item.$id)}>
+                <View
+                  className={`w-6 h-6 border-2 rounded-md ${
+                    item.is_purchased ? "bg-primary-300" : "border-primary-200"
+                  }`}
+                />
+              </TouchableOpacity>
+              <Text
+                className={`flex-1 ml-4 text-lg ${
+                  item.is_purchased
+                    ? "line-through text-primary-200"
+                    : "text-black"
+                }`}
+              >
+                {item.name}
+              </Text>
+              <TouchableOpacity onPress={() => deleteItem(item.$id)}>
+                <Image source={icons.trash} className="w-6 h-6" />
+              </TouchableOpacity>
+            </View>
+          )}
+          keyExtractor={(item) => item.$id}
+          ListFooterComponent={
+            <View className="flex-row mt-6 items-center">
+              <TextInput
+                className="flex-1 p-3 border rounded-md border-primary-200"
+                placeholder="Add a new item..."
+                value={newItem}
+                onChangeText={setNewItem}
+                onSubmitEditing={addItem}
               />
-            </TouchableOpacity>
-            <Text
-              style={[
-                styles.itemText,
-                item.is_purchased && styles.strikethrough,
-              ]}
-            >
-              {item.name}
-            </Text>
-            <TouchableOpacity onPress={() => deleteItem(item.$id)}>
-              <Image source={icons.trash} style={styles.trashIcon} />
-            </TouchableOpacity>
-          </View>
-        )}
-        keyExtractor={(item) => item.$id}
-        ListFooterComponent={
-          <View style={styles.footer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Add a new item..."
-              value={newItem}
-              onChangeText={setNewItem}
-              onSubmitEditing={addItem}
-            />
-            <TouchableOpacity onPress={addItem} style={styles.addButton}>
-              <Text style={styles.addButtonText}>Add</Text>
-            </TouchableOpacity>
-          </View>
-        }
-      />
+              <TouchableOpacity
+                onPress={addItem}
+                className="ml-4 px-4 py-2 bg-primary-300 rounded-md"
+              >
+                <Text className="text-white font-semibold">Add</Text>
+              </TouchableOpacity>
+            </View>
+          }
+        />
 
-      {/* Control Buttons */}
-      <View style={styles.controlButtons}>
-        <TouchableOpacity onPress={deleteList} style={styles.deleteButton}>
-          <Text style={styles.deleteButtonText}>Delete List</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={deleteCheckedItems}
-          style={styles.deleteButton}
-        >
-          <Text style={styles.deleteButtonText}>Delete Checked Items</Text>
+        <View className="flex-row justify-between mt-6">
+          <TouchableOpacity
+            onPress={deleteList}
+            className="bg-danger px-4 py-2 rounded-md"
+          >
+            <Text className="text-white font-semibold">Delete List</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={deleteCheckedItems}
+            className="bg-danger px-4 py-2 rounded-md"
+          >
+            <Text className="text-white font-semibold">
+              Delete Checked Items
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity onPress={() => router.push("/(root)/(tabs)")}>
+          <Text className="text-base font-bold text-primary-300 text-center mt-4">
+            Go to Hub
+          </Text>
         </TouchableOpacity>
       </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
-  navButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  navButton: { backgroundColor: "#4caf50", padding: 12, borderRadius: 8 },
-  navButtonText: { color: "#fff", fontWeight: "bold" },
-  listItem: { flexDirection: "row", alignItems: "center", paddingVertical: 10 },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderRadius: 5,
-    borderColor: "#4caf50",
-  },
-  checked: { backgroundColor: "#4caf50" },
-  itemText: { flex: 1, marginLeft: 10, fontSize: 16 },
-  strikethrough: { textDecorationLine: "line-through", color: "#aaa" },
-  trashIcon: { width: 20, height: 20 },
-  footer: { flexDirection: "row", marginTop: 20 },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 10,
-    borderRadius: 5,
-  },
-  addButton: { backgroundColor: "#4caf50", padding: 12, borderRadius: 5 },
-  addButtonText: { color: "#fff", fontWeight: "bold" },
-  controlButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-  },
-  deleteButton: { backgroundColor: "#e74c3c", padding: 12, borderRadius: 5 },
-  deleteButtonText: { color: "#fff", fontWeight: "bold" },
-});
 
 export default ShoppingList;
