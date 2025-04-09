@@ -1,21 +1,86 @@
-import React, { useState } from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  DATABASE_ID,
+  databases,
+  getCurrentUserId,
+  getOrCreateShoppingListForCurrentUser,
+  INVENTORY_ITEM_COLLECTION_ID,
+  LIST_ITEMS_COLLECTION_ID,
+} from "@/lib/appwrite";
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
 
-
-// todo delete this if not actually gonna use it
 interface ItemDeletionModalProps {
   visible: boolean;
   itemName: string;
-  onConfirm: (addToShoppingList: boolean) => void;
+  itemId: string;
   onCancel: () => void;
 }
 
 const ItemDeletionModal: React.FC<ItemDeletionModalProps> = ({
   visible,
   itemName,
-  onConfirm,
+  itemId,
   onCancel,
 }) => {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [listId, setListId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userId = await getCurrentUserId();
+      if (userId) {
+        setUserId(userId);
+        const listId = await getOrCreateShoppingListForCurrentUser();
+        setListId(listId);
+      } else {
+        Alert.alert("Error", "User not logged in");
+      }
+    };
+    fetchUserData();
+  }, []);
+
+  const handleAddAndDelete = async () => {
+    try {
+      await databases.createDocument(
+        DATABASE_ID,
+        LIST_ITEMS_COLLECTION_ID,
+        "unique()",
+        {
+          list_id: listId,
+          name: itemName,
+          quantity: 1,
+          is_purchased: false,
+        }
+      );
+      await handleDelete();
+    } catch (error) {
+      console.error("Error adding item:", error);
+      Alert.alert("Error", "Failed to add item to shopping list");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await databases.deleteDocument(
+        DATABASE_ID,
+        INVENTORY_ITEM_COLLECTION_ID,
+        itemId
+      );
+      Alert.alert("Success", "Item deleted successfully!");
+      onCancel(); // using the parent handler to close modal
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      Alert.alert("Error", "Failed to delete item");
+    }
+  };
+
   return (
     <Modal
       transparent
@@ -33,14 +98,14 @@ const ItemDeletionModal: React.FC<ItemDeletionModalProps> = ({
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.addButton]}
-              onPress={() => onConfirm(true)}
+              onPress={handleAddAndDelete}
             >
               <Text style={styles.buttonText}>Yes</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
-              onPress={() => onConfirm(false)}
+              onPress={handleDelete}
             >
               <Text style={styles.buttonText}>No</Text>
             </TouchableOpacity>

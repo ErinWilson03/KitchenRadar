@@ -21,7 +21,6 @@ interface InventoryItemProps {
   expiryDate: string;
   isFrozen: boolean;
   onEdit: (itemId: string) => void;
-  onDelete: (itemName: string) => void;
 }
 
 const InventoryItem: React.FC<InventoryItemProps> = ({
@@ -31,7 +30,6 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
   expiryDate,
   isFrozen,
   onEdit,
-  onDelete,
 }) => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false); // Manage Edit Modal visibility
@@ -47,13 +45,6 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
 
   const handleDeletePress = () => {
     setDeleteModalVisible(true);
-  };
-
-  const handleModalConfirm = (addToShoppingList: boolean) => {
-    setDeleteModalVisible(false);
-    if (addToShoppingList) {
-      onDelete(name); // Call the onDelete function passed from parent to add the item to the shopping list
-    }
   };
 
   const handleEditPress = () => {
@@ -94,7 +85,7 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
       <ItemDeletionModal
         visible={deleteModalVisible}
         itemName={name}
-        onConfirm={handleModalConfirm}
+        itemId={$id}
         onCancel={() => setDeleteModalVisible(false)}
       />
 
@@ -107,8 +98,8 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
           onRequestClose={handleEditModalClose}
         >
             <EditItemForm
-              itemId={$id} // Assuming 'name' is a unique identifier for the item, you might need to adjust this to the actual item ID
-              setModalVisible={setEditModalVisible} // Pass function to close modal
+              itemId={$id}
+              setModalVisible={setEditModalVisible}
             />
         </Modal>
       </SafeAreaView>
