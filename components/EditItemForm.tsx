@@ -6,7 +6,9 @@ import {
   Alert,
   TouchableOpacity,
   Modal,
-  StyleSheet,
+  Image,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import {
   DATABASE_ID,
@@ -18,6 +20,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import DatePicker from "./DatePicker"; // Import DatePicker Component
 import format from "date-fns/format";
+import icons from "@/constants/icons";
 
 interface EditItemFormProps {
   setModalVisible: (visible: boolean) => void;
@@ -49,13 +52,13 @@ const EditItemForm: React.FC<EditItemFormProps> = ({
 
         // Fetch the item data to populate the form
         try {
-            console.log("Item Id found: ", itemId);
+          console.log("Item Id found: ", itemId);
 
           const item = await databases.getDocument(
             DATABASE_ID,
             INVENTORY_ITEM_COLLECTION_ID,
             itemId
-          );          
+          );
 
           setName(item.name || "");
           setDate(item.expiry_date || "");
@@ -73,7 +76,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({
     };
     fetchUserData();
   }, [itemId]);
-  
+
   const formatDateForDisplay = (date: string) => {
     const parsedDate = new Date(date); // Convert the ISO string to a Date object
     return format(parsedDate, "dd-MM-yyyy"); // Format the Date object as "DD-MM-YYYY"
@@ -140,185 +143,124 @@ const EditItemForm: React.FC<EditItemFormProps> = ({
   };
 
   return (
-    <SafeAreaView
-      style={{
-        margin: 1,
-        padding: 20,
-        backgroundColor: "#f9f9f9",
-        borderRadius: 10,
-        flex: 1,
-      }}
-    >
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "bold",
-          color: "#333",
-          marginBottom: 10,
-        }}
-      >
-        Edit Item
-      </Text>
-
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
-          Item Name
-        </Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          maxLength={50}
-          placeholder="Enter item name"
-          placeholderTextColor={"#666"}
-          style={{
-            borderWidth: 1,
-            borderColor: "#ddd",
-            borderRadius: 8,
-            padding: 10,
-            fontSize: 16,
-            backgroundColor: "#fff",
-          }}
-        />
-      </View>
-
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
-          Expiry Date
-        </Text>
-        <TouchableOpacity
-          onPress={() => setIsDatePickerVisible(true)}
-          style={{
-            borderWidth: 1,
-            borderColor: "#ddd",
-            borderRadius: 8,
-            padding: 10,
-            backgroundColor: "#fff",
-            justifyContent: "center",
-          }}
-        >
-          <Text style={{ fontSize: 16, color: "#333" }}>
-            {date ? formatDateForDisplay(date) : "DD-MM-YYYY"}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View className="flex-1 bg-white p-5 rounded-lg">
+        <View className="flex-row justify-between items-center my-6">
+          <Image source={icons.edit} className="w-11 h-11" />
+          <Text className="text-3xl font-semibold text-primary-300">
+            Edit Item
           </Text>
-        </TouchableOpacity>
-      </View>
+        </View>
 
-      <DatePicker
-        date={date}
-        onDateChange={handleDateChange}
-        isVisible={isDatePickerVisible}
-        onClose={() => setIsDatePickerVisible(false)}
-      />
+        {/* Item Name */}
+        <View className="mb-6">
+          <Text className="text-base text-primary-300 mb-1">Item Name</Text>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            maxLength={50}
+            placeholder="Enter item name"
+            placeholderTextColor="#999"
+            className="border border-primary-200 rounded-lg p-3 bg-white text-base"
+          />
+        </View>
 
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
-          Date Type
-        </Text>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        {/* Expiry Date */}
+        <View className="mb-6">
+          <Text className="text-base text-primary-300 mb-1">Expiry Date</Text>
           <TouchableOpacity
-            onPress={() => setDateType("use_by")}
-            style={{
-              backgroundColor: dateType === "use_by" ? "#00BFAE" : "#fff",
-              padding: 10,
-              borderRadius: 8,
-              borderColor: "#ddd",
-              borderWidth: 1,
-              flex: 1,
-              marginRight: 10,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+            onPress={() => setIsDatePickerVisible(true)}
+            className="border border-primary-200 rounded-lg p-3 bg-white"
           >
-            <Text
-              style={{
-                fontSize: 16,
-                color: dateType === "use_by" ? "#fff" : "#00BFAE",
-              }}
-            >
-              Use By
+            <Text className="text-base text-gray-700">
+              {date ? formatDateForDisplay(date) : "DD-MM-YYYY"}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setDateType("best_before")}
-            style={{
-              backgroundColor: dateType === "best_before" ? "#00BFAE" : "#fff",
-              padding: 10,
-              borderRadius: 8,
-              borderColor: "#ddd",
-              borderWidth: 1,
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                color: dateType === "best_before" ? "#fff" : "#00BFAE",
-              }}
+        </View>
+
+        <DatePicker
+          date={date}
+          onDateChange={handleDateChange}
+          isVisible={isDatePickerVisible}
+          onClose={() => setIsDatePickerVisible(false)}
+        />
+
+        {/* Date Type */}
+        <View className="mb-6">
+          <Text className="text-base text-primary-300 mb-1">Date Type</Text>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              onPress={() => setDateType("use_by")}
+              className={`flex-1 items-center justify-center p-3 rounded-lg border ${
+                dateType === "use_by"
+                  ? "bg-primary-200 border-transparent"
+                  : "bg-white border-primary-300"
+              }`}
             >
-              Best Before
+              <Text
+                className={`text-base ${
+                  dateType === "use_by" ? "text-white" : "text-primary-500"
+                }`}
+              >
+                Use By
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setDateType("best_before")}
+              className={`flex-1 items-center justify-center p-3 rounded-lg border ${
+                dateType === "best_before"
+                  ? "bg-primary-200 border-transparent"
+                  : "bg-white border-primary-300"
+              }`}
+            >
+              <Text
+                className={`text-base ${
+                  dateType === "best_before" ? "text-white" : "text-primary-500"
+                }`}
+              >
+                Best Before
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Quantity */}
+        <View className="mb-6">
+          <Text className="text-base text-primary-300 mb-1">Quantity</Text>
+          <TextInput
+            value={quantity}
+            onChangeText={setQuantity}
+            keyboardType="numeric"
+            maxLength={4}
+            placeholder="Enter quantity"
+            placeholderTextColor="#999"
+            className="border border-primary-200 rounded-lg p-3 bg-white text-base"
+          />
+        </View>
+
+        {/* Submit Button */}
+        <View className="flex-row gap-3 mb-6">
+          <TouchableOpacity
+            onPress={handleSubmit}
+            className="bg-primary-300 p-4 rounded-lg flex-1 items-center"
+          >
+            <Text className="text-white text-base font-semibold">
+              Update Item
+            </Text>
+          </TouchableOpacity>
+
+          {/* Cancel Button */}
+          <TouchableOpacity
+            onPress={handleBackPress}
+            className="bg-gray-200 p-4 rounded-lg flex-1 items-center"
+          >
+            <Text className="text-gray-800 text-base font-semibold">
+              Cancel
             </Text>
           </TouchableOpacity>
         </View>
       </View>
-
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
-          Quantity
-        </Text>
-        <TextInput
-          value={quantity}
-          onChangeText={setQuantity}
-          keyboardType="numeric"
-          maxLength={4}
-          placeholder="Enter quantity"
-          placeholderTextColor={"#666"}
-          style={{
-            borderWidth: 1,
-            borderColor: "#ddd",
-            borderRadius: 8,
-            padding: 10,
-            fontSize: 16,
-            backgroundColor: "#fff",
-          }}
-        />
-      </View>
-
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <TouchableOpacity
-          onPress={handleSubmit}
-          style={{
-            backgroundColor: "#00BFAE",
-            padding: 15,
-            borderRadius: 8,
-            flex: 1,
-            marginRight: 10,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-            Update Item
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={handleBackPress}
-          style={{
-            backgroundColor: "#ddd",
-            padding: 15,
-            borderRadius: 8,
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "#333", fontSize: 16, fontWeight: "bold" }}>
-            Cancel
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
 

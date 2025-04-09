@@ -39,6 +39,7 @@ import sort from "@/assets/icons/sort.png";
 import trash from "@/assets/icons/trash.png";
 import sortWhite from "@/assets/icons/sort_white.png";
 import facebook from "@/assets/icons/facebook.png";
+import grocery from "@/assets/icons/grocery.png";
 
 export default {
   google,
@@ -82,4 +83,5 @@ export default {
   sort,
   trash,
   facebook,
+  grocery
 };

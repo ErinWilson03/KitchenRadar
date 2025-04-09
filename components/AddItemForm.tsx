@@ -6,7 +6,10 @@ import {
   Alert,
   TouchableOpacity,
   Modal,
+  Image,
   StyleSheet,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import {
   DATABASE_ID,
@@ -18,6 +21,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import BarcodeScanner from "./BarcodeScanner";
 import DatePicker from "./DatePicker"; // Import DatePicker Component
+import icons from "@/constants/icons";
 
 interface AddItemFormProps {
   setModalVisible: (visible: boolean) => void;
@@ -86,17 +90,17 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
     }
     try {
       // Convert the date to an ISO format if needed
-    const [day, month, year] = date.split("-");
-    const expiryDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
+      const [day, month, year] = date.split("-");
+      const expiryDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
 
-    // Check if the date is valid
-    if (isNaN(expiryDate.getTime())) {
-      Alert.alert("Error", "Invalid date value, ensure it is DD-MM-YYYY");
-      return;
-    }
+      // Check if the date is valid
+      if (isNaN(expiryDate.getTime())) {
+        Alert.alert("Error", "Invalid date value, ensure it is DD-MM-YYYY");
+        return;
+      }
 
-    // Send the correctly formatted date to Appwrite (it expects YYYY-MM-DD format)
-    const expiryDateIsoString = expiryDate.toISOString(); // This adds time and UTC info
+      // Send the correctly formatted date to Appwrite (it expects YYYY-MM-DD format)
+      const expiryDateIsoString = expiryDate.toISOString(); // This adds time and UTC info
 
       await databases.createDocument(
         DATABASE_ID,
@@ -133,289 +137,185 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
   };
 
   return (
-    <SafeAreaView
-      style={{
-        margin: 1,
-        padding: 20,
-        backgroundColor: "#f9f9f9",
-        borderRadius: 10,
-        flex: 1,
-      }}
-    >
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "bold",
-          color: "#333",
-          marginBottom: 10,
-        }}
-      >
-        Add Item
-      </Text>
-
-      {/* Barcode Scanner */}
-      <TouchableOpacity
-        onPress={() => setIsModalVisible(true)}
-        style={{
-          padding: 15,
-          borderRadius: 8,
-          backgroundColor: "#00BFAE",
-          marginTop: 10,
-          marginBottom: 15,
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "row",
-        }}
-      >
-        <Text style={{ fontSize: 16, color: "#fff", fontWeight: "bold" }}>
-          Scan Barcode
-        </Text>
-        {scannedBarcodeData ? (
-          <Text style={{ fontSize: 14, color: "#fff", marginLeft: 8 }}>
-            • Scanned
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View className="flex-1 bg-white p-5 rounded-lg">
+        <View className="flex-row justify-between items-center my-6">
+          <Image source={icons.grocery} className="w-11 h-11" />
+          <Text className="text-3xl font-semibold text-primary-300">
+            Add Item
           </Text>
-        ) : null}
-      </TouchableOpacity>
+        </View>
 
-      {/* Item Name */}
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
-          Item Name
-        </Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          maxLength={50}
-          placeholder="Enter item name"
-          placeholderTextColor={"#666"}
-          style={{
-            borderWidth: 1,
-            borderColor: "#ddd",
-            borderRadius: 8,
-            padding: 10,
-            fontSize: 16,
-            backgroundColor: "#fff",
-          }}
-        />
-      </View>
-
-      {/* Expiry Date Picker */}
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
-          Expiry Date
-        </Text>
+        {/* Barcode Scanner */}
         <TouchableOpacity
-          onPress={() => setIsDatePickerVisible(true)}
-          style={{
-            borderWidth: 1,
-            borderColor: "#ddd",
-            borderRadius: 8,
-            padding: 10,
-            backgroundColor: "#fff",
-            justifyContent: "center",
-          }}
+          onPress={() => setIsModalVisible(true)}
+          className="bg-primary-200 py-3 px-4 rounded-lg flex-row justify-center items-center mb-4"
         >
-          <Text style={{ fontSize: 16, color: "#333" }}>
-            {date ? formatDateForDisplay(date) : "DD-MM-YYYY"}
-          </Text>
+          <Text className="text-white text-base font-bold">Scan Barcode</Text>
+          {scannedBarcodeData ? (
+            <Text className="text-white text-sm ml-2">• Scanned</Text>
+          ) : null}
         </TouchableOpacity>
-      </View>
 
-      {/* Date Picker Modal */}
-      <DatePicker
-        date={date}
-        onDateChange={handleDateChange}
-        isVisible={isDatePickerVisible}
-        onClose={() => setIsDatePickerVisible(false)}
-      />
+        {/* Item Name */}
+        <View className="mb-4">
+          <Text className="text-base text-primary-300 mb-1">Item Name</Text>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            maxLength={50}
+            placeholder="Enter item name"
+            placeholderTextColor="#999"
+            className="border border-primary-200 rounded-lg p-3 bg-white text-base"
+          />
+        </View>
 
-      {/* Other Fields */}
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
-          Date Type
-        </Text>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        {/* Expiry Date Picker */}
+        <View className="mb-4">
+          <Text className="text-base text-primary-300 mb-1">Expiry Date</Text>
           <TouchableOpacity
-            onPress={() => setDateType("use_by")}
-            style={{
-              backgroundColor: dateType === "use_by" ? "#00BFAE" : "#fff",
-              padding: 10,
-              borderRadius: 8,
-              borderColor: "#ddd",
-              borderWidth: 1,
-              flex: 1,
-              marginRight: 10,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+            onPress={() => setIsDatePickerVisible(true)}
+            className="border border-primary-200 rounded-lg p-3 bg-white"
           >
-            <Text
-              style={{
-                fontSize: 16,
-                color: dateType === "use_by" ? "#fff" : "#00BFAE",
-              }}
-            >
-              Use By
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setDateType("best_before")}
-            style={{
-              backgroundColor: dateType === "best_before" ? "#00BFAE" : "#fff",
-              padding: 10,
-              borderRadius: 8,
-              borderColor: "#ddd",
-              borderWidth: 1,
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                color: dateType === "best_before" ? "#fff" : "#00BFAE",
-              }}
-            >
-              Best Before
+            <Text className="text-base text-gray-700">
+              {date ? formatDateForDisplay(date) : "DD-MM-YYYY"}
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Frozen Item? */}
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
-          Frozen Item?
-        </Text>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <TouchableOpacity
-            onPress={() => setFrozen(false)}
-            style={{
-              backgroundColor: frozen === false ? "#00BFAE" : "#fff",
-              padding: 10,
-              borderRadius: 8,
-              borderColor: "#ddd",
-              borderWidth: 1,
-              flex: 1,
-              marginRight: 10,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                color: frozen === false ? "#fff" : "#00BFAE",
-              }}
+        {/* Date Picker Modal */}
+        <DatePicker
+          date={date}
+          onDateChange={handleDateChange}
+          isVisible={isDatePickerVisible}
+          onClose={() => setIsDatePickerVisible(false)}
+        />
+
+        {/* Date Type */}
+        <View className="mb-4">
+          <Text className="text-base text-primary-300 mb-1">Date Type</Text>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              onPress={() => setDateType("use_by")}
+              className={`flex-1 items-center justify-center p-3 rounded-lg border ${
+                dateType === "use_by"
+                  ? "bg-primary-200 border-transparent"
+                  : "bg-white border-primary-300"
+              }`}
             >
-              No
-            </Text>
+              <Text
+                className={`text-base ${
+                  dateType === "use_by" ? "text-white" : "text-primary-500"
+                }`}
+              >
+                Use By
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setDateType("best_before")}
+              className={`flex-1 items-center justify-center p-3 rounded-lg border ${
+                dateType === "best_before"
+                  ? "bg-primary-200 border-transparent"
+                  : "bg-white border-primary-300"
+              }`}
+            >
+              <Text
+                className={`text-base ${
+                  dateType === "best_before" ? "text-white" : "text-primary-500"
+                }`}
+              >
+                Best Before
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Frozen Item */}
+        <View className="mb-4">
+          <Text className="text-base text-primary-300 mb-1">Frozen Item?</Text>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              onPress={() => setFrozen(false)}
+              className={`flex-1 items-center justify-center p-3 rounded-lg border ${
+                frozen === false
+                  ? "bg-primary-200 border-transparent"
+                  : "bg-white border-primary-200"
+              }`}
+            >
+              <Text
+                className={`text-base ${
+                  frozen === false ? "text-white" : "text-primary-500"
+                }`}
+              >
+                No
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setFrozen(true)}
+              className={`flex-1 items-center justify-center p-3 rounded-lg border ${
+                frozen === true
+                  ? "bg-primary-200 border-transparent"
+                  : "bg-white border-primary-200"
+              }`}
+            >
+              <Text
+                className={`text-base ${
+                  frozen === true ? "text-white" : "text-primary-500"
+                }`}
+              >
+                Yes
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Quantity */}
+        <View className="mb-6">
+          <Text className="text-base text-primary-300 mb-1">Quantity</Text>
+          <TextInput
+            value={quantity}
+            onChangeText={setQuantity}
+            keyboardType="numeric"
+            placeholder="Enter quantity"
+            placeholderTextColor="#999"
+            className="border border-primary-200 rounded-lg p-3 bg-white text-base"
+          />
+        </View>
+
+        {/* Submit and Cancel Button */}
+        <View className="flex-row gap-3 mb-6">
+          <TouchableOpacity
+            onPress={handleSubmit}
+            className="bg-primary-300 p-4 rounded-lg items-center w-1/2"
+          >
+            <Text className="text-white text-base font-semibold">Add Item</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
-            onPress={() => setFrozen(true)}
-            style={{
-              backgroundColor: frozen === true ? "#00BFAE" : "#fff",
-              padding: 10,
-              borderRadius: 8,
-              borderColor: "#ddd",
-              borderWidth: 1,
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+            onPress={handleBackPress}
+            className="bg-gray-200 p-4 rounded-lg flex-1 items-center"
           >
-            <Text
-              style={{
-                fontSize: 16,
-                color: frozen === true ? "#fff" : "#00BFAE",
-              }}
-            >
-              Yes
+            <Text className="text-gray-800 text-base font-semibold">
+              Cancel
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Quantity */}
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ fontSize: 16, color: "#666", marginBottom: 5 }}>
-          Quantity
-        </Text>
-        <TextInput
-          value={quantity}
-          onChangeText={setQuantity}
-          keyboardType="numeric"
-          placeholder="Enter quantity"
-          placeholderTextColor={"#666"}
-          style={{
-            borderWidth: 1,
-            borderColor: "#ddd",
-            borderRadius: 8,
-            padding: 10,
-            fontSize: 16,
-            backgroundColor: "#fff",
-          }}
-        />
-      </View>
-
-      {/* Submit and Cancel Buttons */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <TouchableOpacity
-          style={[styles.button, styles.cancelButton]}
-          onPress={handleBackPress}
+        {/* Barcode Modal */}
+        <Modal
+          visible={isModalVisible}
+          animationType="slide"
+          transparent={false}
         >
-          <Text style={[styles.buttonText, styles.cancelButtonText]}>
-            Cancel
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={handleSubmit}
-          style={[styles.button, styles.submitButton]}
-        >
-          <Text style={styles.buttonText}>Add Item</Text>
-        </TouchableOpacity>
+          <BarcodeScanner
+            isModalVisible={isModalVisible}
+            setIsModalVisible={setIsModalVisible}
+            onBarcodeScanned={handleBarcodeScanned}
+          />
+        </Modal>
       </View>
-
-      {/* Barcode Modal */}
-      <Modal visible={isModalVisible} animationType="slide" transparent={false}>
-        <BarcodeScanner
-          isModalVisible={isModalVisible}
-          setIsModalVisible={setIsModalVisible}
-          onBarcodeScanned={handleBarcodeScanned}
-        />
-      </Modal>
-    </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    marginVertical: 20,
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    flex: 1,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  submitButton: {
-    backgroundColor: "#00BFAE",
-    marginLeft: 8,
-  },
-  cancelButton: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#00BFAE",
-    marginRight: 8,
-  },
-  cancelButtonText: {
-    color: "#00BFAE",
-  },
-});
 
 export default AddItemForm;

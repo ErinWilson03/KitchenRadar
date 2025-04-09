@@ -86,7 +86,6 @@ const Inventory = () => {
             expiryDate={item.expiry_date}
             isFrozen={item.is_frozen}
             onEdit={() => handleEdit(item.$id)} // Pass itemId to edit handler
-            onDelete={() => handleDelete(item.$id)}
           />
         )}
       />
@@ -110,13 +109,13 @@ const Inventory = () => {
       </Modal>
 
       <TouchableOpacity onPress={() => router.push("/inventory")}>
-        <Text className="text-base font-bold text-gray-600 text-center mt-4">
+        <Text className="text-base font-bold text-primary-300 text-center mt-4">
           Refresh Inventory
         </Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/(root)/(tabs)")}>
-        <Text className="text-base font-bold text-gray-600 text-center mt-4">
+        <Text className="text-base font-bold text-primary-300 text-center mt-4">
           Go to Hub
         </Text>
       </TouchableOpacity>
