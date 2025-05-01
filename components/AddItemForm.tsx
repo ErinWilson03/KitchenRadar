@@ -17,6 +17,7 @@ import {
   getCurrentUserId,
   getOrCreateInventoryForCurrentUser,
   INVENTORY_ITEM_COLLECTION_ID,
+  INVENTORY_LOGS_COLLECTION_ID,
 } from "../lib/appwrite";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BarcodeScanner from "./BarcodeScanner";
@@ -102,7 +103,8 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
       // Send the correctly formatted date to Appwrite (it expects YYYY-MM-DD format)
       const expiryDateIsoString = expiryDate.toISOString(); // This adds time and UTC info
 
-      await databases.createDocument(
+      //create the document in the db
+      const createdItem = await databases.createDocument(
         DATABASE_ID,
         INVENTORY_ITEM_COLLECTION_ID,
         "unique()",
@@ -117,6 +119,20 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
           barcode: scannedBarcodeData || null,
         }
       );
+    
+      // use the created document to make a log
+      await databases.createDocument(
+        DATABASE_ID,
+        INVENTORY_LOGS_COLLECTION_ID,
+        "unique()",
+        {
+          inventory_item_id: createdItem.$id,
+          action: "added",
+          quantity: parseInt(quantity),
+          timestamp: new Date().toISOString(),
+        }
+      );
+      
       Alert.alert("Success", "Item added successfully!");
 
       // Reset the fields

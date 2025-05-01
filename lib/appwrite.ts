@@ -35,6 +35,7 @@ export const INVENTORY_ITEM_COLLECTION_ID = "67a2a41a0016d6eaf9ae";
 export const INSIGHTS_COLLECTION_ID = "67a8d887001b380da540";
 export const SHOPPING_LISTS_COLLECTION_ID = "67a8d7840026a7a37040";
 export const LIST_ITEMS_COLLECTION_ID = "67a8d82100246a889594";
+export const INVENTORY_LOGS_COLLECTION_ID = "680ba1b9001a08881ffd";
 
 // Login funcitonality
 export async function login(provider: OAuthProvider) {

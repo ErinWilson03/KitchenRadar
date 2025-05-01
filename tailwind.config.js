@@ -21,7 +21,7 @@ module.exports = {
         300: "#1E3F20",
       },
       accent: {
-        DEFAULT: "#FBFBFD",
+        DEFAULT: "#fdd673",
       },
       white: {
         DEFAULT: "#FFFFFF",

@@ -86,7 +86,7 @@ export default function Index() {
                 title="Kitchen Insights"
                 description="View your use and wasteage analytics"
                 imageSource={images.insights} // Use appropriate image
-                onPress={() => router.push('/kitchen-insights')}
+                onPress={() => router.push('/insights')}
               />
             </View>
           </View>

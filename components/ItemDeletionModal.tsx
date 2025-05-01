@@ -13,8 +13,10 @@ import {
   getCurrentUserId,
   getOrCreateShoppingListForCurrentUser,
   INVENTORY_ITEM_COLLECTION_ID,
+  INVENTORY_LOGS_COLLECTION_ID,
   LIST_ITEMS_COLLECTION_ID,
 } from "@/lib/appwrite";
+import { ID } from "react-native-appwrite";
 
 interface ItemDeletionModalProps {
   visible: boolean;
@@ -36,6 +38,7 @@ const ItemDeletionModal: React.FC<ItemDeletionModalProps> = ({
   const [quantityToDelete, setQuantityToDelete] = useState(1);
   const [userId, setUserId] = useState<string | null>(null);
   const [listId, setListId] = useState<string | null>(null);
+  const [removalReason, setRemovalReason] = useState("other"); // we assume here that the user is deleting because of another reason as default
 
   const isMaxQuantity = quantityToDelete >= currentQuantity;
 
@@ -59,47 +62,65 @@ const ItemDeletionModal: React.FC<ItemDeletionModalProps> = ({
     }
   }, [visible]); // Dependency is 'visible', so this runs when modal is toggled
 
-const handleDelete = async (addToList: boolean) => {
-  try {
-    // If we DO want to add the deleted items to the shopping list
-    if (addToList && listId) {
-      await databases.createDocument(
-        DATABASE_ID,
-        LIST_ITEMS_COLLECTION_ID,
-        "unique()",
-        {
-          list_id: listId,
-          name: itemName,
-          quantity: quantityToDelete,
-          is_purchased: false,
-        }
-      );
-    }
+  const handleDelete = async (addToList: boolean) => {
+    try {
+      // If we DO want to add the deleted items to the shopping list
+      if (addToList && listId) {
+        await databases.createDocument(
+          DATABASE_ID,
+          LIST_ITEMS_COLLECTION_ID,
+          "unique()",
+          {
+            list_id: listId,
+            name: itemName,
+            quantity: quantityToDelete,
+            is_purchased: false,
+          }
+        );
+      }
 
-    // If we're just updating the inventory quantity (not deleting the full quantity of item)
-    if (quantityToDelete < currentQuantity) {
-      await databases.updateDocument(
-        DATABASE_ID,
-        INVENTORY_ITEM_COLLECTION_ID,
-        itemId,
-        {
-          quantity: currentQuantity - quantityToDelete,
-        }
-      );
-    } else {
-      // If quantity to delete is equal to or more than the available quantity, delete the item entirely
-      await databases.deleteDocument(
-        DATABASE_ID,
-        INVENTORY_ITEM_COLLECTION_ID,
-        itemId
-      );
-    }
+      // If we're just updating the inventory quantity (not deleting the full quantity of item)
+      if (quantityToDelete < currentQuantity) {
+        await databases.updateDocument(
+          DATABASE_ID,
+          INVENTORY_ITEM_COLLECTION_ID,
+          itemId,
+          {
+            quantity: currentQuantity - quantityToDelete,
+          }
+        );
+      } else {
+        // If quantity to delete is equal to or more than the available quantity, delete the item entirely
+        await databases.deleteDocument(
+          DATABASE_ID,
+          INVENTORY_ITEM_COLLECTION_ID,
+          itemId
+        );
+      }
 
       Alert.alert("Success", "Item updated successfully!");
       onDeleted(); // parent handles refresh
     } catch (error) {
       console.error("Deletion error", error);
       Alert.alert("Error", "Something went wrong");
+    }
+
+    // Log the deletion reason
+    try {
+      await databases.createDocument(
+        DATABASE_ID,
+        INVENTORY_LOGS_COLLECTION_ID,
+        "unique()",
+        {
+          inventory_item_id: itemId,
+          action: removalReason,
+          quantity: quantityToDelete,
+          timestamp: new Date().toISOString(),
+        }
+      );
+      console.log("Item ", itemName, " successfully deleted with reason " + removalReason);
+    } catch (error) {
+      console.error("Error creating document:", error);
     }
   };
 
@@ -125,7 +146,9 @@ const handleDelete = async (addToList: boolean) => {
             </TouchableOpacity>
             <TextInput
               className={`w-20 h-12 border text-center text-2xl mx-5 rounded-md flex items-center justify-center ${
-                isMaxQuantity ? "border-danger text-danger" : "border-primary-200"
+                isMaxQuantity
+                  ? "border-danger text-danger"
+                  : "border-primary-200"
               }`}
               keyboardType="numeric"
               value={quantityToDelete.toString()}
@@ -159,6 +182,33 @@ const handleDelete = async (addToList: boolean) => {
               Max quantity available to delete
             </Text>
           )}
+
+          <View className="w-full border-t border-primary-200 my-3"></View>
+
+          <Text className="text-base text-center mb-2">
+            Why are you deleting it?
+          </Text>
+          <View className="flex-row justify-around mb-4">
+            {["consumed", "expired", "preference", "other"].map((reason) => (
+              <TouchableOpacity
+                key={reason}
+                onPress={() => setRemovalReason(reason)}
+                className={`px-3 py-1 rounded-full border ${
+                  removalReason === reason
+                    ? "bg-primary-300 border-primary-300"
+                    : "border-primary-200"
+                }`}
+              >
+                <Text
+                  className={`${
+                    removalReason === reason ? "text-white" : "text-primary-300"
+                  }`}
+                >
+                  {reason}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <View className="w-full border-t border-primary-200 my-3"></View>
 
