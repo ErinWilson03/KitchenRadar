@@ -21,10 +21,10 @@ import {
 import { ListItem } from "@/lib/types";
 import { Query } from "react-native-appwrite";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { LogBox } from 'react-native';
+import { LogBox } from "react-native";
 
 LogBox.ignoreLogs([
-  'VirtualizedLists should never be nested', // suppressing the warning about the flatlist being in a scrollview
+  "VirtualizedLists should never be nested", // suppressing the warning about the flatlist being in a scrollview
 ]);
 
 const ShoppingList = () => {
@@ -210,84 +210,86 @@ const ShoppingList = () => {
       <KeyboardAwareScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
-        enableOnAndroid={true}  // Enable keyboard handling on Android
-        keyboardShouldPersistTaps="handled"  // Close keyboard when tapping on other parts of the screen
+        enableOnAndroid={true} // Enable keyboard handling on Android
+        keyboardShouldPersistTaps="handled" // Close keyboard when tapping on other parts of the screen
       >
-      <View className="mx-3">
-        <View className="flex-row justify-between items-center mb-6">
-          <Image source={icons.wallet} className="w-8 h-8" />
-          <Text className="text-2xl font-rubik-semibold text-black">
-            Shopping List
-          </Text>
-        </View>
+        <View className="mx-3">
+          <View className="flex-row justify-between items-center mb-6">
+            <Image source={icons.wallet} className="w-8 h-8" />
+            <Text className="text-2xl font-rubik-semibold text-black">
+              Shopping List
+            </Text>
+          </View>
 
-        <FlatList
-          data={shoppingList}
-          renderItem={({ item }) => (
-            <View className="flex-row items-center py-4 border-b border-primary-100">
-              <TouchableOpacity onPress={() => toggleChecked(item.$id)}>
-                <View
-                  className={`w-6 h-6 border-2 rounded-md ${
-                    item.is_purchased ? "bg-primary-300" : "border-primary-200"
+          <FlatList
+            data={shoppingList}
+            renderItem={({ item }) => (
+              <View className="flex-row items-center py-4 border-b border-primary-100">
+                <TouchableOpacity onPress={() => toggleChecked(item.$id)}>
+                  <View
+                    className={`w-6 h-6 border-2 rounded-md ${
+                      item.is_purchased
+                        ? "bg-primary-300"
+                        : "border-primary-200"
+                    }`}
+                  />
+                </TouchableOpacity>
+                <Text
+                  className={`flex-1 ml-4 text-lg ${
+                    item.is_purchased
+                      ? "line-through text-primary-200"
+                      : "text-black"
                   }`}
+                >
+                  {item.name}
+                </Text>
+                <TouchableOpacity onPress={() => deleteItem(item.$id)}>
+                  <Image source={icons.trash} className="w-6 h-6" />
+                </TouchableOpacity>
+              </View>
+            )}
+            keyExtractor={(item) => item.$id}
+            ListFooterComponent={
+              <View className="flex-row mt-6 items-center">
+                <TextInput
+                  className="flex-1 p-3 border rounded-md border-primary-200"
+                  placeholder="Add a new item..."
+                  value={newItem}
+                  onChangeText={setNewItem}
+                  onSubmitEditing={addItem}
                 />
-              </TouchableOpacity>
-              <Text
-                className={`flex-1 ml-4 text-lg ${
-                  item.is_purchased
-                    ? "line-through text-primary-200"
-                    : "text-black"
-                }`}
-              >
-                {item.name}
-              </Text>
-              <TouchableOpacity onPress={() => deleteItem(item.$id)}>
-                <Image source={icons.trash} className="w-6 h-6" />
-              </TouchableOpacity>
-            </View>
-          )}
-          keyExtractor={(item) => item.$id}
-          ListFooterComponent={
-            <View className="flex-row mt-6 items-center">
-              <TextInput
-                className="flex-1 p-3 border rounded-md border-primary-200"
-                placeholder="Add a new item..."
-                value={newItem}
-                onChangeText={setNewItem}
-                onSubmitEditing={addItem}
-              />
-              <TouchableOpacity
-                onPress={addItem}
-                className="ml-4 px-4 py-2 bg-primary-300 rounded-md"
-              >
-                <Text className="text-white font-semibold">Add</Text>
-              </TouchableOpacity>
-            </View>
-          }
-        />
+                <TouchableOpacity
+                  onPress={addItem}
+                  className="ml-4 px-4 py-2 bg-primary-300 rounded-md"
+                >
+                  <Text className="text-white font-semibold">Add</Text>
+                </TouchableOpacity>
+              </View>
+            }
+          />
 
-        <View className="flex-row justify-between mt-6">
-          <TouchableOpacity
-            onPress={deleteList}
-            className="bg-danger px-4 py-2 rounded-md"
-          >
-            <Text className="text-white font-semibold">Delete List</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={deleteCheckedItems}
-            className="bg-danger px-4 py-2 rounded-md"
-          >
-            <Text className="text-white font-semibold">
-              Delete Checked Items
+          <View className="flex-row justify-between mt-6">
+            <TouchableOpacity
+              onPress={deleteList}
+              className="bg-danger px-4 py-2 rounded-md"
+            >
+              <Text className="text-white font-semibold">Delete List</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={deleteCheckedItems}
+              className="bg-danger px-4 py-2 rounded-md"
+            >
+              <Text className="text-white font-semibold">
+                Delete Checked Items
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity onPress={() => router.push("/(root)/(tabs)")}>
+            <Text className="text-base font-bold text-primary-300 text-center mt-4">
+              Go to Hub
             </Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => router.push("/(root)/(tabs)")}>
-          <Text className="text-base font-bold text-primary-300 text-center mt-4">
-            Go to Hub
-          </Text>
-        </TouchableOpacity>
-      </View>
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );

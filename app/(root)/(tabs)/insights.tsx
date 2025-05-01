@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { Text, ScrollView, ActivityIndicator } from "react-native";
 import { fetchDeletionLogs } from "@/lib/api";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
-
 
 type DeletionLogData = {
   totalDeleted: number;
@@ -25,17 +24,17 @@ const defaultData: DeletionLogData = {
 };
 
 const Insights = () => {
-  const [data, setData] = useState<DeletionLogData>(defaultData);
+  const [data, setData] = useState<DeletionLogData>(defaultData); // this avoids an error that the data could be undefined as we're beginning with a populated state
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadAnalyticsData = async () => {
       setLoading(true);
       const fetchedData = await fetchDeletionLogs();
-      if(fetchedData){
+      if (fetchedData) {
         setData(fetchedData);
         setLoading(false);
-      }     
+      }
     };
     loadAnalyticsData();
   }, []);
@@ -44,12 +43,16 @@ const Insights = () => {
 
   return (
     <ScrollView style={{ padding: 10 }}>
-            {/* Title */}
-            <Text style={{ fontSize: 26, fontWeight: "bold", color: "#1E3F20", textAlign: "center" }}>
+      <Text
+        style={{
+          fontSize: 26,
+          fontWeight: "bold",
+          color: "#1E3F20",
+          textAlign: "center",
+        }}
+      >
         Kitchen Insights
       </Text>
-
-      {/* Subheading */}
       <Text
         style={{
           fontSize: 14,

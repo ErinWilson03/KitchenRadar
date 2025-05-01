@@ -3,12 +3,6 @@ import "./globals.css";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import GlobalProvider from "@/lib/global-provider";
-import { LogBox } from "react-native/Libraries/LogBox/LogBox";
-
-
-// LogBox.ignoreLogs([
-//   'Each child in a list should have a unique "key" prop.', // suppressing the warning about the flatlist being in a scrollview
-// ]);
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({

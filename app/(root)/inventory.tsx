@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, Modal } from "react-native";
+import { Text, FlatList, TouchableOpacity, Modal } from "react-native";
 import {
   databases,
   DATABASE_ID,
@@ -9,7 +9,7 @@ import InventoryItem from "../../components/InventoryItem";
 import AddItemForm from "../../components/AddItemForm";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import EditItemForm from "../../components/EditItemForm"; // Import EditItemForm
+import EditItemForm from "../../components/EditItemForm";
 
 interface InventoryItemType {
   $id: string;
@@ -45,22 +45,9 @@ const Inventory = () => {
     fetchInventory();
   }, []);
 
-  const handleDelete = async (itemId: string) => {
-    try {
-      await databases.deleteDocument(
-        DATABASE_ID,
-        INVENTORY_ITEM_COLLECTION_ID,
-        itemId
-      );
-      setInventory(inventory.filter((item) => item.$id !== itemId));
-    } catch (error) {
-      console.error("Error deleting item:", error);
-    }
-  };
-
   const handleEdit = (itemId: string) => {
     setCurrentItemId(itemId);
-    setEditModalVisible(true); // Show the edit modal
+    setEditModalVisible(true);
   };
 
   return (

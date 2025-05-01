@@ -29,6 +29,7 @@ const Filters = () => {
       {/* Map over the categories in the data constant for each filter bubble */}
       {categories.map((item, index) => (
         <TouchableOpacity
+          key={item.category}
           onPress={() => handleCategoryPress(item.category)}
           className={`flex flex-col items-start mr-2 px-4 py-2 rounded-full ${
             selectedCategory === item.category

@@ -75,7 +75,7 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ focused }) => (
             <TabIcon
-              icon={icons.bell}
+              icon={icons.insights}
               focused={focused}
               title="Insights"
             />

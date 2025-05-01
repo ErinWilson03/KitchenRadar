@@ -8,10 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
 import { logout } from "@/lib/appwrite";
 import { useGlobalContext } from "@/lib/global-provider";
-
 import icons from "@/constants/icons";
 import { settings } from "@/constants/data";
 
@@ -66,7 +64,6 @@ const Profile = () => {
       >
         <View className="flex flex-row items-center justify-between mt-5">
           <Text className="text-xl font-rubik-bold">Profile</Text>
-          <Image source={icons.bell} className="size-5" />
         </View>
 
         <View className="flex flex-row justify-center mt-5">
