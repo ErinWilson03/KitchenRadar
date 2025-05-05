@@ -13,7 +13,7 @@ import images from "@/constants/images";
 import icons from "@/constants/icons";
 import { login } from "@/lib/appwrite";
 import { useGlobalContext } from "@/lib/global-provider";
-import { Redirect, router } from "expo-router";
+import { router } from "expo-router";
 
 const SignIn = () => {
   const { refetch, loading, isLoggedIn } = useGlobalContext();
