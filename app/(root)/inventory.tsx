@@ -72,6 +72,7 @@ const Inventory = () => {
             quantity={item.quantity}
             expiryDate={item.expiry_date}
             isFrozen={item.is_frozen}
+            dateType={item.date_type}
             onEdit={() => handleEdit(item.$id)} // Pass itemId to edit handler
           />
         )}

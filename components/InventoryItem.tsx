@@ -12,7 +12,7 @@ import { format, isBefore, addDays } from "date-fns";
 import { isWithinInterval } from "date-fns/isWithinInterval";
 import icons from "@/constants/icons";
 import ItemDeletionModal from "./ItemDeletionModal";
-import EditItemForm from "./EditItemForm"; 
+import EditItemForm from "./EditItemForm";
 
 interface InventoryItemProps {
   $id: string;
@@ -20,6 +20,7 @@ interface InventoryItemProps {
   quantity: number;
   expiryDate: string;
   isFrozen: boolean;
+  dateType: string;
   onEdit: (itemId: string) => void;
 }
 
@@ -29,10 +30,11 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
   quantity,
   expiryDate,
   isFrozen,
+  dateType,
   onEdit,
 }) => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false); // Manage Edit Modal visibility
+  const [editModalVisible, setEditModalVisible] = useState(false);
 
   const today = new Date();
   const expiry = new Date(expiryDate);
@@ -61,7 +63,8 @@ const InventoryItem: React.FC<InventoryItemProps> = ({
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.details}>Quantity: {quantity}</Text>
         <Text style={styles.details}>
-          Expiry: {format(expiry, "dd-MM-yyyy")}
+          {dateType === "best_before" ? "Best Before" : "Use By"}:{" "}
+          {format(expiry, "dd-MM-yyyy")}
         </Text>
       </View>
 
