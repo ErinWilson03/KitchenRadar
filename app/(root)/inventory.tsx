@@ -4,12 +4,14 @@ import {
   databases,
   DATABASE_ID,
   INVENTORY_ITEM_COLLECTION_ID,
+  getOrCreateInventoryForCurrentUser,
 } from "../../lib/appwrite";
 import InventoryItem from "../../components/InventoryItem";
 import AddItemForm from "../../components/AddItemForm";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EditItemForm from "../../components/EditItemForm";
+import { Query } from "react-native-appwrite";
 
 interface InventoryItemType {
   $id: string;
@@ -32,18 +34,29 @@ const Inventory = () => {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
+        const userInventoryId = await getOrCreateInventoryForCurrentUser();
+  
+        if (!userInventoryId) {
+          console.warn("No inventory ID found for user.");
+          return;
+        }
+  
         const response = await databases.listDocuments(
           DATABASE_ID,
-          INVENTORY_ITEM_COLLECTION_ID
+          INVENTORY_ITEM_COLLECTION_ID,
+          [Query.equal("inventory_id", userInventoryId)] 
         );
+  
         setInventory(response.documents as unknown as InventoryItemType[]);
       } catch (error) {
         console.error("Error fetching inventory:", error);
       }
     };
-
+  
     fetchInventory();
   }, []);
+  
+  
 
   const handleEdit = (itemId: string) => {
     setCurrentItemId(itemId);
