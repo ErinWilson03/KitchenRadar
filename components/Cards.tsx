@@ -9,10 +9,8 @@ import { isWithinInterval } from "date-fns/isWithinInterval";
 
 export const ItemCard = ({
   item,
-  onPress,
 }: {
   item: InventoryItem;
-  onPress?: () => void;
 }) => {
   
   const today = new Date();
@@ -21,7 +19,6 @@ export const ItemCard = ({
   today.setHours(0, 0, 0, 0);
   expiry.setHours(0, 0, 0, 0);
 
-
   const isExpired = isBefore(expiry, today);
   const isNearExpiry = isWithinInterval(expiry, {
     start: today,
@@ -29,8 +26,7 @@ export const ItemCard = ({
   });
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
+    <View
       className="flex flex-col items-start w-60 h-40 relative"
     >
       <Image
@@ -62,7 +58,7 @@ export const ItemCard = ({
           Expiry: {new Date(item.expiry_date).toLocaleDateString()}
         </Text>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
