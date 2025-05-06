@@ -60,8 +60,12 @@ const EditItemForm: React.FC<EditItemFormProps> = ({
             itemId
           );
 
+          // setting the date from Appwrite
+          const rawDate = item.expiry_date; // ISO
+          const formattedDate = rawDate.split("T")[0]; // Extract "2025-05-05"
+          setDate(formattedDate);
+
           setName(item.name || "");
-          setDate(item.expiry_date || "");
           setDateType(item.date_type || "use_by");
           setQuantity(item.quantity?.toString() || "");
           setFrozen(item.is_frozen || false);
@@ -78,14 +82,13 @@ const EditItemForm: React.FC<EditItemFormProps> = ({
   }, [itemId]);
 
   const formatDateForDisplay = (date: string) => {
-    const parsedDate = new Date(date); // Convert the ISO string to a Date object
-    return format(parsedDate, "dd-MM-yyyy"); // Format the Date object as "DD-MM-YYYY"
+    const [year, month, day] = date.split("-");
+    if (!year || !month || !day) return date; // prevent gibberish like 10-20-0010
+    return `${day}-${month}-${year}`;
   };
 
-  const handleDateChange = (formattedDate: string) => {
-    const [day, month, year] = formattedDate.split("-");
-    const backendDate = `${year}-${month}-${day}`;
-    setDate(backendDate);
+  const handleDateChange = (selectedDate: string) => {
+    setDate(selectedDate); // already in YYYY-MM-DD format here
     setIsDatePickerVisible(false);
   };
 
@@ -100,10 +103,14 @@ const EditItemForm: React.FC<EditItemFormProps> = ({
     }
     try {
       const [day, month, year] = date.split("-");
-      const expiryDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
+      const expiryDate = new Date(`${date}T00:00:00Z`);
 
+      console.log("date ", expiryDate);
       if (isNaN(expiryDate.getTime())) {
-        Alert.alert("Error", "Invalid date value, ensure it is DD-MM-YYYY");
+        Alert.alert(
+          "Error",
+          "Invalid date value, ensure format is valid (YYYY-MM-DD)"
+        );
         return;
       }
 
@@ -173,7 +180,8 @@ const EditItemForm: React.FC<EditItemFormProps> = ({
             className="border border-primary-200 rounded-lg p-3 bg-white"
           >
             <Text className="text-base text-gray-700">
-              {date ? formatDateForDisplay(date) : "DD-MM-YYYY"}
+              {date ? `${formatDateForDisplay(date)}` : ""}
+              {/* chat above is change */}
             </Text>
           </TouchableOpacity>
         </View>

@@ -12,7 +12,7 @@ import { format, isBefore, addDays } from "date-fns";
 import { isWithinInterval } from "date-fns/isWithinInterval";
 import icons from "@/constants/icons";
 import ItemDeletionModal from "./ItemDeletionModal";
-import EditItemForm from "./EditItemForm"; // Import the EditItemForm component
+import EditItemForm from "./EditItemForm"; 
 
 interface InventoryItemProps {
   $id: string;

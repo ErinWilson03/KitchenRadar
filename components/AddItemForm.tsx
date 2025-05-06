@@ -65,18 +65,14 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
     }
   };
 
-  // Format date for UI display in DD-MM-YYYY format
   const formatDateForDisplay = (date: string) => {
     const [year, month, day] = date.split("-");
+    if (!year || !month || !day) return date; // prevent gibberish like 10-20-0010
     return `${day}-${month}-${year}`;
   };
 
-  // Handle date change, format to YYYY-MM-DD for backend
-  const handleDateChange = (formattedDate: string) => {
-    const [day, month, year] = formattedDate.split("-");
-
-    const backendDate = `${year}-${month}-${day}`; // YYYY-MM-DD format
-    setDate(backendDate); // Store the date in the correct format
+  const handleDateChange = (selectedDate: string) => {
+    setDate(selectedDate); // already in YYYY-MM-DD format here
     setIsDatePickerVisible(false);
   };
 
@@ -92,11 +88,14 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
     try {
       // Convert the date to an ISO format if needed
       const [day, month, year] = date.split("-");
-      const expiryDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
+      const expiryDate = new Date(`${date}T00:00:00Z`);
 
       // Check if the date is valid
       if (isNaN(expiryDate.getTime())) {
-        Alert.alert("Error", "Invalid date value, ensure it is DD-MM-YYYY");
+        Alert.alert(
+          "Error",
+          "Invalid date value, ensure format is valid (YYYY-MM-DD)"
+        );
         return;
       }
 
@@ -119,7 +118,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
           barcode: scannedBarcodeData || null,
         }
       );
-    
+
       // use the created document to make a log
       await databases.createDocument(
         DATABASE_ID,
@@ -132,7 +131,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
           timestamp: new Date().toISOString(),
         }
       );
-      
+
       Alert.alert("Success", "Item added successfully!");
 
       // Reset the fields
@@ -193,8 +192,10 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ setModalVisible }) => {
             onPress={() => setIsDatePickerVisible(true)}
             className="border border-primary-200 rounded-lg p-3 bg-white"
           >
-            <Text className="text-base text-gray-700">
-              {date ? formatDateForDisplay(date) : "DD-MM-YYYY"}
+            <Text
+              className={`text-base ${date ? "text-gray-700" : "text-[#999]"}`}
+            >
+              {date ? `${formatDateForDisplay(date)}` : "Pick a date"}
             </Text>
           </TouchableOpacity>
         </View>

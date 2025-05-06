@@ -15,13 +15,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   isVisible,
   onClose,
 }) => {
-  // Convert YYYY-MM-DD to DD-MM-YYYY for UI display only
-  const formatDateForDisplay = (date: string) => {
-    const [year, month, day] = date.split("-");
-    return `${day}-${month}-${year}`;
-  };
-
   const handleDateChange = (selectedDate: string) => {
+    console.log(selectedDate);
     onDateChange(selectedDate);
     onClose();
   };
@@ -32,9 +27,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
         <View style={styles.container}>
           <Text style={styles.title}>Pick Expiry Date</Text>
           <Calendar
+            minDate={new Date().toISOString().split("T")[0]}
             current={date} // The current date passed in is in DD-MM-YYYY
-            onDayPress={(day: { dateString: string }) =>
-              handleDateChange(day.dateString) // Use the date in YYYY-MM-DD format for Appwrite's benefit
+            onDayPress={
+              (day: { dateString: string }) => handleDateChange(day.dateString) // Use the date in YYYY-MM-DD format for Appwrite's benefit
             }
             markedDates={{
               [date]: {
