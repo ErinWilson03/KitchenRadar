@@ -232,6 +232,45 @@ const EditItemForm: React.FC<EditItemFormProps> = ({
           </View>
         </View>
 
+        {/* Frozen Item */}
+        <View className="mb-4">
+          <Text className="text-base text-primary-300 mb-1">Frozen Item?</Text>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              onPress={() => setFrozen(false)}
+              className={`flex-1 items-center justify-center p-3 rounded-lg border ${
+                frozen === false
+                  ? "bg-primary-200 border-transparent"
+                  : "bg-white border-primary-200"
+              }`}
+            >
+              <Text
+                className={`text-base ${
+                  frozen === false ? "text-white" : "text-primary-500"
+                }`}
+              >
+                No
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setFrozen(true)}
+              className={`flex-1 items-center justify-center p-3 rounded-lg border ${
+                frozen === true
+                  ? "bg-primary-200 border-transparent"
+                  : "bg-white border-primary-200"
+              }`}
+            >
+              <Text
+                className={`text-base ${
+                  frozen === true ? "text-white" : "text-primary-500"
+                }`}
+              >
+                Yes
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Quantity */}
         <View className="mb-6">
           <Text className="text-base text-primary-300 mb-1">Quantity</Text>
